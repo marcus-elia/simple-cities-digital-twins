@@ -11,8 +11,8 @@ def poly_latlon_to_utm(poly_latlon):
     # Get the UTM zone of the first point
     _, _, original_zone, _ = utm.from_latlon(poly_latlon.exterior.coords[0][0], poly_latlon.exterior.coords[0][1])
 
-    # Iterate over the points and convert them
-    utm_coords = []
+    # Iterate over the outer boundary and convert it
+    outer_boundary_utm = []
     for latlon_point in poly_latlon.exterior.coords:
         # Convert
         x, y, zone, letter = utm.from_latlon(latlon_point[0], latlon_point[1])
@@ -23,8 +23,27 @@ def poly_latlon_to_utm(poly_latlon):
             return shapely.Polygon()
 
         # If nothing bad happened, add the point to the new polygon
-        utm_coords.append((x, y))
-    return shapely.Polygon(utm_coords)
+        outer_boundary_utm.append((x, y))
+
+    # Do the holes
+    holes_utm = []
+    for hole in poly_latlon.interiors:
+        hole_utm = []
+        for latlon_point in hole.coords:
+            # Convert
+            x, y, zone, letter = utm.from_latlon(latlon_point[0], latlon_point[1])
+
+            # Check for a UTM zone crossing
+            if zone != original_zone:
+                print("Polygon crosses from UTM zone %d to %d. Omitting." % (original_zone, zone))
+                continue
+
+            # If nothing bad happened, add the point to the new polygon
+            hole_utm.append((x, y))
+        holes_utm.append(hole_utm)
+
+
+    return shapely.Polygon(outer_boundary_utm, holes_utm)
 
 def main():
     print("Main function not implemented")

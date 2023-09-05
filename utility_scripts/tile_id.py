@@ -8,7 +8,7 @@ import utm
 
 class TileID:
     # Every tile is 100m x 100m
-    TILE_SIZE = 100
+    TILE_SIZE = 1000
 
     def __init__(self, arg1, arg2, zone=-1):
         if zone == -1:

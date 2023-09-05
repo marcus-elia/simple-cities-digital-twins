@@ -3,7 +3,12 @@
 import shapely
 import utm
 
-def poly_latlon_to_utm(poly_latlon):
+def poly_latlon_to_utm(poly_latlon, offset=(0,0)):
+    """
+    Convert a shapely polygon from lat/lon to UTM. This does both
+    the exterior and the holes. If an offset is specified, it is
+    added to every point (in UTM).
+    """
     # First, don't do anything to an empty polygon
     if len(poly_latlon.exterior.coords) == 0:
         return shapely.Polygon()
@@ -23,7 +28,7 @@ def poly_latlon_to_utm(poly_latlon):
             return shapely.Polygon()
 
         # If nothing bad happened, add the point to the new polygon
-        outer_boundary_utm.append((x, y))
+        outer_boundary_utm.append((x + offset[0], y + offset[1]))
 
     # Do the holes
     holes_utm = []
@@ -39,7 +44,7 @@ def poly_latlon_to_utm(poly_latlon):
                 continue
 
             # If nothing bad happened, add the point to the new polygon
-            hole_utm.append((x, y))
+            hole_utm.append((x + offset[0], y + offset[1]))
         holes_utm.append(hole_utm)
 
 

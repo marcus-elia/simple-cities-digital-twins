@@ -158,6 +158,8 @@ def main():
         for geojson_multipolygon in geojson_contents['features']:
             shapely_polygons = geojson_multipoly_to_shapely(geojson_multipolygon.geometry.coordinates)
             for shapely_polygon_latlon in shapely_polygons:
+                if not shapely_polygon_latlon.is_simple:
+                    continue
                 shapely_polygon_utm = poly_latlon_to_utm(shapely_polygon_latlon, offset=(args.offset_x, args.offset_y))
 
                 # With the polygon in UTM, determine which tiles overlap with its bbox.

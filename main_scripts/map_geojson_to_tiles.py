@@ -38,7 +38,7 @@ def get_overlapping_tiles(shapely_polygon_utm, zone):
 
 def main():
     parser = argparse.ArgumentParser(description="Map geojson polygons into tiles.")
-    parser.add_argument("-i", "--input", required=True, help="Path to input geojson file")  
+    parser.add_argument("-i", "--input_filepath", required=True, help="Path to input geojson file")  
     parser.add_argument("-o", "--output_filename", required=True, help="Name of output file to write in tiles")
     parser.add_argument("-d", "--data_directory", required=True, help="Name of output directory")
     parser.add_argument("-c", "--city_name", required=True, help="Name of city (sub-directory of output directory that will be created)")
@@ -78,7 +78,7 @@ def main():
     p.communicate()
 
     # Read the contents of the geojson file
-    f = open('./shapefiles/lynchburgRoads.geojson')
+    f = open(args.input_filepath)
     geojson_contents = geojson.loads(f.read())
     f.close()
 

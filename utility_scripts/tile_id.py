@@ -26,12 +26,16 @@ class TileID:
         self.j = int(np.floor(y / TileID.TILE_SIZE))
         self.zone = zone
 
-    def centerUTM(self):
+    def center_utm(self):
         return ((self.i + 0.5) * TileID.TILE_SIZE, (self.j + 0.5) * TileID.TILE_SIZE, self.zone)
 
-    def centerLatLon(self):
-        x, y, zone = self.centerUTM()
+    def center_lat_lon(self):
+        x, y, zone = self.center_utm()
         return utm.to_latlon(x, y, zone)
+
+    def sw_corner(self):
+        x, y, zone = self.center_utm()
+        return (x - TileID.TILE_SIZE / 2, y - TileID.TILE_SIZE / 2)
 
     def polygon(self):
         size = TileID.TILE_SIZE

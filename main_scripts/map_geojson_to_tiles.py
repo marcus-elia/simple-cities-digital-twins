@@ -18,10 +18,6 @@ from latlon_to_utm import *
 from polygon_utils import *
 from tile_id import *
 
-def parse_latlon_string(latlon_string):
-    lat,lon = latlon_string.split(',')
-    return (float(lat.strip()), float(lon.strip()))
-
 def map_shapely_polygon_into_tile(tile, shapely_polygon_latlon, manual_offset=(0,0)):
     shapely_polygon_utm = poly_latlon_to_utm(shapely_polygon_latlon, offset=manual_offset)
     clipped_poly = tile.polygon().intersection(shapely_polygon_utm)

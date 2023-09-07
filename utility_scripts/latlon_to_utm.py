@@ -5,6 +5,10 @@
 import argparse
 import utm
 
+def parse_latlon_string(latlon_string):
+    lat,lon = latlon_string.split(',')
+    return (float(lat.strip()), float(lon.strip()))
+
 def main():
     parser = argparse.ArgumentParser(description="Convert UTM to Lat/Lon.")
     parser.add_argument('lat') 

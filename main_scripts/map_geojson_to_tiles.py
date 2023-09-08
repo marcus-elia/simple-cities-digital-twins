@@ -13,6 +13,7 @@ import time
 import utm
 
 sys.path.insert(1, 'C:/Users/mse93/Documents/simple-cities-digital-twins/utility_scripts')
+from general_utils import *
 from geojson_utils import *
 from latlon_to_utm import *
 from polygon_utils import *
@@ -178,21 +179,8 @@ def main():
 
                 # Log the status
                 num_completed += 1
-                percent_complete = float(num_completed) / float(num_polygons) * 100
                 time_elapsed = int(time.time() - start_time)
-                time_remaining = int(time_elapsed * (100 - percent_complete) / percent_complete)
-                if time_elapsed < 120:
-                    time_string = "%d seconds, %d seconds remaining" % (time_elapsed, time_remaining)
-                else:
-                    time_elapsed = int(time_elapsed / 60)
-                    time_remaining = int(time_remaining / 60)
-                    if time_elapsed < 120:
-                        time_string = "%d minutes, %d minutes remaining" % (time_elapsed, time_remaining)
-                    else:
-                        time_elapsed = int(time_elapsed / 60)
-                        time_remaining = int(time_remaining / 60)
-                        time_string = "%d hours, %d hours remaining" % (time_elapsed, time_remaining)
-                print("Completed %d/%d polygons (%.1f percent) in %s" % (num_completed, num_polygons, percent_complete, time_string))
+                print(get_time_estimate_string(time_elapsed, num_completed, num_polygons))
 
         # The tile to polygon map is complete. Write each tile's geojson file.
         for i in range(min_i, max_i + 1):

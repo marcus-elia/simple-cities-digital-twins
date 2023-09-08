@@ -22,5 +22,5 @@ def get_time_estimate_string(time_elapsed, num_complete, num_total):
             time_remaining = int(time_remaining / 60)
             time_string += "%d hours remaining" % (time_remaining)
 
-    return "Completed %d/%d (%.1f percent) in %s" % (num_completed, num_total, percent_complete, time_string)
+    return "Completed %d/%d (%.1f percent) in %s" % (num_complete, num_total, percent_complete, time_string)
 

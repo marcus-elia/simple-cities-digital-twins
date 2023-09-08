@@ -8,11 +8,12 @@ import os
 import png
 import shapely
 import sys
+import time
 
 sys.path.insert(1, 'C:/Users/mse93/Documents/simple-cities-digital-twins/utility_scripts')
+from general_utils import *
 from geojson_utils import *
 from latlon_to_utm import *
-#from polygon_utils import *
 from tile_id import *
 
 def main():
@@ -43,9 +44,9 @@ def main():
     ROAD_FILENAME = "road_polygons.geojson"
     SIDEWALK_FILENAME = "sidewalk_polygons.geojson"
     city_directory = os.path.join(args.data_directory, args.city_name)
-    ROAD_COLOR = (0, 0, 255)
+    ROAD_COLOR = (0, 0, 20)
     GRASS_COLOR = (0, 180, 20)
-    SIDEWALK_COLOR = (255, 80, 80)
+    SIDEWALK_COLOR = (80, 80, 80)
     PNG_SIZE = 1024
     RESOLUTION = TileID.TILE_SIZE / PNG_SIZE
 
@@ -79,12 +80,16 @@ def main():
             pixel_rgb_array = [[0 for _ in range(3 * PNG_SIZE)] for _ in range(PNG_SIZE)]
 
             # Iterate over every index of the array and set the color of the pixel
+            num_complete = 0
+            num_pixels = PNG_SIZE * PNG_SIZE
+            start_time = time.time()
+            print("Iterating over pixels")
             for row in range(PNG_SIZE):
-                for col in range(3 * PNG_SIZE, 3):
+                for col in range(0, 3 * PNG_SIZE, 3):
                     # Determine the UTM coordinate of the pixel
-                    x = sw_x + RESOLUTION / 2 + col * TileID.TILE_SIZE / PNG_SIZE
+                    x = sw_x + RESOLUTION / 2 + col / 3 * TileID.TILE_SIZE / PNG_SIZE
                     y = sw_y + RESOLUTION / 2 + row * TileID.TILE_SIZE / PNG_SIZE
-                    pixel_point_utm = shapely.Point(x, y)
+                    pixel_point_utm = shapely.Point(y, x)
 
                     # Check for containments
                     in_road = False
@@ -105,9 +110,16 @@ def main():
                         color = SIDEWALK_COLOR
                     else:
                         color = GRASS_COLOR
-                    pixel_rgb_array[row][col] = color[0]
-                    pixel_rgb_array[row][col + 1] = color[1]
-                    pixel_rgb_array[row][col + 2] = color[2]
+                    png_row = PNG_SIZE - row - 1 # PNG has y inverted
+                    pixel_rgb_array[png_row][col] = color[0]
+                    pixel_rgb_array[png_row][col + 1] = color[1]
+                    pixel_rgb_array[png_row][col + 2] = color[2]
+
+                    num_complete += 1
+                    time_elapsed = time.time() - start_time
+                    status_string = get_time_estimate_string(time_elapsed, num_complete, num_pixels)
+                    sys.stdout.write("\r%s" % (status_string))
+                    sys.stdout.flush()
 
             # Write the PNG to the tile
             f = open(os.path.join(full_path, args.output_filename), 'wb')

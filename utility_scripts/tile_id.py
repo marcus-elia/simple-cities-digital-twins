@@ -76,7 +76,7 @@ def main():
     tile_id = TileID(lat, lon)
     print("lat, lon = %f, %f" % (lat, lon))
     print("tile id = (%d, %d, %d)" % (tile_id.i, tile_id.j, tile_id.zone))
-    print("tile center = (%f, %f)" % (tile_id.centerUTM()[0], tile_id.centerUTM()[1]))
+    print("tile center = (%f, %f)" % (tile_id.center_utm()[0], tile_id.center_utm()[1]))
     print(tile_id.polygon())
 
 if __name__ == "__main__":

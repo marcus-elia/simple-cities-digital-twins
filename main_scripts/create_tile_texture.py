@@ -52,6 +52,8 @@ def main():
     JPG_SIZE = 4096
 
     # Iterate over every tile, creating an SVG manually and using ImageMagick to convert to JPG
+    start_time = time.time()
+    num_complete = 0
     for i in range(min_i, max_i + 1):
         for j in range(min_j, max_j + 1):
             current_tile = TileID.tile_indices_to_object(i, j, tile_min.zone)
@@ -89,6 +91,12 @@ def main():
             PATH_TO_IMAGE_MAGICK = "C:/Program Files/ImageMagick-7.1.1-Q16-HDRI/magick.exe"
             jpg_path = os.path.join(full_path, JPG_FILENAME)
             subprocess.run([PATH_TO_IMAGE_MAGICK, "convert", "-size", "%dx%d" % (JPG_SIZE, JPG_SIZE), svg_path, jpg_path])
+
+            # Log the status
+            time_elapsed = time.time() - start_time
+            num_complete += 1
+            print(get_time_estimate_string(time_elapsed, num_complete, num_tiles))
+
 
 if __name__ == "__main__":
     main()

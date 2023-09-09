@@ -155,8 +155,6 @@ def main():
         for geojson_multipolygon in geojson_contents['features']:
             shapely_polygons = geojson_multipoly_to_shapely(geojson_multipolygon.geometry.coordinates)
             for shapely_polygon_latlon in shapely_polygons:
-                if not shapely_polygon_latlon.is_simple:
-                    continue
                 shapely_polygon_utm = poly_latlon_to_utm(shapely_polygon_latlon, offset=(args.offset_x, args.offset_y))
 
                 # With the polygon in UTM, determine which tiles overlap with its bbox.
@@ -171,8 +169,10 @@ def main():
                 for i in range(bbox_i_min, bbox_i_max + 1):
                     for j in range(bbox_j_min, bbox_j_max + 1):
                         current_tile = TileID.tile_indices_to_object(i, j, tile_min.zone)
-                        clipped_poly = current_tile.polygon().intersection(shapely_polygon_utm)
-                        if not clipped_poly.is_simple:
+                        try:
+                            clipped_poly = current_tile.polygon().intersection(shapely_polygon_utm)
+                        except shapely.errors.GEOSException:
+                            print("Error intersecting polygon with tile. Skipping")
                             continue
 
                         tile_to_polygon_map[(i, j)] = tile_to_polygon_map[(i, j)].union(clipped_poly)

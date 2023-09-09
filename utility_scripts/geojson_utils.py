@@ -8,6 +8,18 @@ import shapely
 import utm
 
 def geojson_poly_to_shapely(geojson_polygon):
+    # Special case for empty polygon
+    if len(geojson_polygon) == 0:
+        return shapely.Polygon()
+
+    # Single polygon with no holes
+    if type(geojson_polygon[0][0]) != list:
+        outer_boundary = []
+        for lon,lat in geojson_polygon:
+            outer_boundary.append((lat, lon))
+        return shapely.Polygon(outer_boundary)
+    
+    # A polygon that does have holes
     outer_boundary = []
     holes = []
     for lon,lat in geojson_polygon[0]:

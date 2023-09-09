@@ -183,6 +183,7 @@ def main():
                 print(get_time_estimate_string(time_elapsed, num_completed, num_polygons))
 
         # The tile to polygon map is complete. Write each tile's geojson file.
+        print("Storing files in tiles.")
         for i in range(min_i, max_i + 1):
             for j in range(min_j, max_j + 1):
                 tile_union = tile_to_polygon_map[(i, j)]

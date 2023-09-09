@@ -40,7 +40,7 @@ def geojson_multipoly_to_shapely(geojson_multipoly):
     return polys
 
 def num_polygons_in_geojson_file(geojson_contents):
-    return sum([len(geojson_multipoly) for geojson_multipoly in geojson_contents['features']])
+    return len(geojson_contents['features'])
 
 def shapely_polygon_to_geojson(shapely_poly):
     return geojson.Polygon([list(shapely_poly.exterior.coords)] + [list(hole.coords) for hole in shapely_poly.interiors])

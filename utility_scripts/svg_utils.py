@@ -11,8 +11,7 @@ def create_tile_svg(tile, color_polygons_pairs, output_filepath):
     x_min, y_min = tile.sw_corner()
     x_max = x_min + TileID.TILE_SIZE
     y_max = y_min + TileID.TILE_SIZE
-    #f.write('<svg viewBox="%d %d %d %d">\n' % (x_min, y_min, x_max, y_max))
-    f.write('<svg viewBox="%d %d %d %d">\n' % (0, 0, TileID.TILE_SIZE, TileID.TILE_SIZE))
+    f.write('<svg viewBox="%d %d %d %d" xmlns="http://www.w3.org/2000/svg">\n' % (0, 0, TileID.TILE_SIZE, TileID.TILE_SIZE))
 
     for color, shapely_polygons in color_polygons_pairs:
         for shapely_polygon in shapely_polygons:

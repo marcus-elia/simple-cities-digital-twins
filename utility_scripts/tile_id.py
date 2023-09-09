@@ -45,6 +45,15 @@ class TileID:
                 (self.i * size, (self.j + 1) * size), \
                 (self.i * size, self.j * size)))
 
+    # TODO get rid of this
+    def polygon_xy_flipped(self):
+        size = TileID.TILE_SIZE
+        return shapely.Polygon(((self.j * size, self.i * size),\
+                ((self.j + 1) * size, self.i * size),\
+                ((self.j + 1) * size, (self.i + 1) * size), \
+                (self.j * size, (self.i + 1) * size), \
+                (self.j * size, self.i * size)))
+
     def tile_indices_to_object(i, j, zone):
         """
         Since I couldn't hack a third type of constructor into the

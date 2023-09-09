@@ -43,12 +43,14 @@ def main():
 
     ROAD_FILENAME = "road_polygons.geojson"
     SIDEWALK_FILENAME = "sidewalk_polygons.geojson"
+    WATER_FILENAME = "water_polygons.geojson"
     SVG_FILENAME = "tile_texture.svg"
     JPG_FILENAME = "tile_texture.jpg"
     city_directory = os.path.join(args.data_directory, args.city_name)
     ROAD_COLOR = "rgb(60,60,60)"
     GRASS_COLOR = "rgb(0,180,20)"
     SIDEWALK_COLOR = "rgb(128,128,128)"
+    WATER_COLOR = "rgb(0,140,190)"
     JPG_SIZE = 4096
 
     # Iterate over every tile, creating an SVG manually and using ImageMagick to convert to JPG
@@ -65,7 +67,7 @@ def main():
             road_geojson_contents = geojson.loads(f.read())
             f.close()
 
-            # Convert to roads shapely polygons
+            # Convert roads to shapely polygons
             shapely_road_polygons = []
             for geojson_multipolygon in road_geojson_contents['features']:
                 shapely_road_polygons += geojson_multipoly_to_shapely(geojson_multipolygon['geometry']['coordinates'])
@@ -75,13 +77,24 @@ def main():
             sidewalk_geojson_contents = geojson.loads(f.read())
             f.close()
 
-            # Convert to roads shapely polygons
+            # Convert sidewalks to shapely polygons
             shapely_sidewalk_polygons = []
             for geojson_multipolygon in sidewalk_geojson_contents['features']:
                 shapely_sidewalk_polygons += geojson_multipoly_to_shapely(geojson_multipolygon['geometry']['coordinates'])
 
+            # Read the contents of the water geojson file
+            f = open(os.path.join(full_path, WATER_FILENAME))
+            water_geojson_contents = geojson.loads(f.read())
+            f.close()
+
+            # Convert water to shapely polygons
+            shapely_water_polygons = []
+            for geojson_multipolygon in water_geojson_contents['features']:
+                shapely_water_polygons += geojson_multipoly_to_shapely(geojson_multipolygon['geometry']['coordinates'])
+
             # Write a SVG to the tile
             color_polygons_pairs = [(GRASS_COLOR, [current_tile.polygon_xy_flipped()]),\
+                    (WATER_COLOR, shapely_water_polygons),\
                     (ROAD_COLOR, shapely_road_polygons),\
                     (SIDEWALK_COLOR, shapely_sidewalk_polygons)]
             svg_path = os.path.join(full_path, SVG_FILENAME)

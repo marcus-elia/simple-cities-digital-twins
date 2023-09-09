@@ -1,11 +1,10 @@
 #!/usr/bin/env python3
 
-# Create tile textures and write them to PNGs.
+# Create tile textures and write them to SVGs/JPGs.
 
 import argparse
 import geojson
 import os
-import png
 import shapely
 import subprocess
 import sys
@@ -19,7 +18,7 @@ from svg_utils import *
 from tile_id import *
 
 def main():
-    parser = argparse.ArgumentParser(description="Create tile texture SVGs and PNGs for tiles.")
+    parser = argparse.ArgumentParser(description="Create tile texture SVGs and JPGs for tiles.")
     parser.add_argument("-d", "--data_directory", required=True, help="Name of output directory")
     parser.add_argument("-c", "--city_name", required=True, help="Name of city (sub-directory of output directory that will be created)")
     parser.add_argument("--sw", required=True, help='SW corner formatted as "lat,lon" or "lat, lon"')
@@ -45,13 +44,14 @@ def main():
     ROAD_FILENAME = "road_polygons.geojson"
     SIDEWALK_FILENAME = "sidewalk_polygons.geojson"
     SVG_FILENAME = "tile_texture.svg"
-    PNG_FILENAME = "tile_texture.png"
+    JPG_FILENAME = "tile_texture.jpg"
     city_directory = os.path.join(args.data_directory, args.city_name)
     ROAD_COLOR = "rgb(60,60,60)"
     GRASS_COLOR = "rgb(0,180,20)"
     SIDEWALK_COLOR = "rgb(128,128,128)"
-    PNG_SIZE = 2048
+    JPG_SIZE = 4096
 
+    # Iterate over every tile, creating an SVG manually and using ImageMagick to convert to JPG
     for i in range(min_i, max_i + 1):
         for j in range(min_j, max_j + 1):
             current_tile = TileID.tile_indices_to_object(i, j, tile_min.zone)
@@ -85,10 +85,10 @@ def main():
             svg_path = os.path.join(full_path, SVG_FILENAME)
             create_tile_svg(current_tile, color_polygons_pairs, svg_path)
 
-            # Convert the SVG to PNG using ImageMagick
+            # Convert the SVG to JPG using ImageMagick
             PATH_TO_IMAGE_MAGICK = "C:/Program Files/ImageMagick-7.1.1-Q16-HDRI/magick.exe"
-            png_path = os.path.join(full_path, PNG_FILENAME)
-            subprocess.run([PATH_TO_IMAGE_MAGICK, "convert", "-size", "%dx%d" % (PNG_SIZE, PNG_SIZE), svg_path, png_path])
+            jpg_path = os.path.join(full_path, JPG_FILENAME)
+            subprocess.run([PATH_TO_IMAGE_MAGICK, "convert", "-size", "%dx%d" % (JPG_SIZE, JPG_SIZE), svg_path, jpg_path])
 
 if __name__ == "__main__":
     main()

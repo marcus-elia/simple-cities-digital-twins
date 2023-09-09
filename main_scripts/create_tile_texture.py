@@ -47,11 +47,10 @@ def main():
     SVG_FILENAME = "tile_texture.svg"
     PNG_FILENAME = "tile_texture.png"
     city_directory = os.path.join(args.data_directory, args.city_name)
-    ROAD_COLOR = (0, 0, 20)
-    GRASS_COLOR = (0, 180, 20)
-    SIDEWALK_COLOR = (80, 80, 80)
+    ROAD_COLOR = "rgb(60,60,60)"
+    GRASS_COLOR = "rgb(0,180,20)"
+    SIDEWALK_COLOR = "rgb(128,128,128)"
     PNG_SIZE = 2048
-    #RESOLUTION = TileID.TILE_SIZE / PNG_SIZE
 
     for i in range(min_i, max_i + 1):
         for j in range(min_j, max_j + 1):
@@ -80,7 +79,9 @@ def main():
                 shapely_sidewalk_polygons += geojson_multipoly_to_shapely(geojson_multipolygon['geometry']['coordinates'])
 
             # Write a SVG to the tile
-            color_polygons_pairs = [("green", [current_tile.polygon_xy_flipped()]), ("black", shapely_road_polygons), ("gray", shapely_sidewalk_polygons)]
+            color_polygons_pairs = [(GRASS_COLOR, [current_tile.polygon_xy_flipped()]),\
+                    (ROAD_COLOR, shapely_road_polygons),\
+                    (SIDEWALK_COLOR, shapely_sidewalk_polygons)]
             svg_path = os.path.join(full_path, SVG_FILENAME)
             create_tile_svg(current_tile, color_polygons_pairs, svg_path)
 

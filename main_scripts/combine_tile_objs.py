@@ -57,8 +57,15 @@ def main():
     mtl_file = open(output_mtl_filepath, 'w')
     obj_file = open(output_obj_filepath, 'w')
 
+    # The header of the OBJ file
+    obj_file.write("mtllib %s.mtl\n" % (args.output_filename))
+
     # Keep track of which materials have already been added so we don't duplicate them
     material_names = set()
+
+    # Keep track of the number of vertices and UVs we've seen
+    vertex_num = 0
+    uv_num = 0
  
     # Iterate over every tile, read the tile's OBJ and MTL and add to the output files.
     # Also copy the tile textures to the output directory.
@@ -101,6 +108,63 @@ def main():
             output_texture_path = os.path.join(args.output_dir, "%d_%d_%d.jpg" % (i, j, tile_min.zone))
             # TODO why is subprocess not working here?
             os.system("copy %s %s" % (tile_texture_path, output_texture_path))
+
+            # Do the OBJ file
+            obj_path = os.path.join(tile_path, TILE_OBJ_FILENAME)
+            f = open(obj_path, 'r')
+            lines = f.readlines()
+            f.close()
+
+            # Every point needs to be offset by a certain amount
+            vertex_offset_x = i * TileID.TILE_SIZE
+            vertex_offset_z = j * TileID.TILE_SIZE
+
+            # Every UV coordinate needs to be scaled and offset
+            u_min = i / (max_i - min_i)
+            v_min = j / (max_j - min_j)
+            u_max = (i + 1) / (max_i - min_i)
+            v_max = (j + 1) / (max_j - min_j)
+
+            # The number of vertices already added to the OBJ is how much to offset
+            # each index by here
+            # Same with UVs
+            vertex_offset = vertex_num
+            uv_offset = uv_num
+
+            # Look through the tile's OBJ file and add things to the combined OBJ file.
+            for line in lines:
+                if line.startswith("mtllib"):
+                    continue
+                elif line.startswith("v "):
+                    point_coords = line.split()[1:]
+                    x = float(point_coords[0]) + vertex_offset_x
+                    y = float(point_coords[1])
+                    z = float(point_coords[2]) + vertex_offset_z
+                    obj_file.write("v    %.6f    %.6f    %.6f\n" % (x, y, z))
+                    vertex_num += 1
+                elif line.startswith("vt"):
+                    uv_coords = line.split()[1:]
+                    u = float(uv_coords[0])
+                    v = float(uv_coords[1])
+                    u = u_min + u * (u_max - u_min)
+                    v = v_min + v * (v_max - v_min)
+                    obj_file.write("vt    %.6f    %.6f\n" % (u, v))
+                    uv_num += 1
+                elif line.startswith("g "):
+                    group_name = line[2:]
+                    obj_file.write("g %s %d_%d_%d\n" % (group_name.strip(), i, j, tile_min.zone))
+                elif line.startswith("usemtl"):
+                    obj_file.write(line)
+                elif line.startswith("f "):
+                    vertices = line.split()[1:]
+                    new_line = "f"
+                    for vertex in vertices:
+                        new_line += " "
+                        vertex_index, uv_index = vertex.split('/')
+                        vertex_index = int(vertex_index) + vertex_offset
+                        uv_index = int(uv_index) + uv_offset
+                        new_line += "%d/%d" % (vertex_index, uv_index)
+                        obj_file.write(new_line + "\n")
 
             # Log the status
             time_elapsed = time.time() - start_time

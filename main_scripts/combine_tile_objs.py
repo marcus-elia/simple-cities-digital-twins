@@ -74,6 +74,7 @@ def main():
             f = open(mtl_path, 'r')
             lines = f.readlines()
             line_index = 0
+            # TODO this MTL parsing is fragile
             while line_index < len(lines):
                 line = lines[line_index]
                 if line.startswith("newmtl"):
@@ -82,11 +83,13 @@ def main():
                         material_names.add(material_name)
                         mtl_file.write(line)
                         line_index += 1
-                        while i < len(lines) and not line.startswith("newmtl"):
+                        if line_index < len(lines):
+                            line = lines[line_index]
+                        while line_index < len(lines) and not line.startswith("newmtl"):
                             line = lines[line_index]
                             if line.endswith(TILE_TEXTURE_FILENAME):
                                 # Rename the tile texture file to be unique for each tile
-                                mtl_file.write("map_Kd %d_%d_%d.jpg" % (i, j, tile_min.zone))
+                                mtl_file.write("map_Kd %d_%d_%d.jpg\n\n" % (i, j, tile_min.zone))
                             else:
                                 mtl_file.write(line)
                             line_index += 1
@@ -96,7 +99,7 @@ def main():
             # Copy the tile texture into the output directory
             tile_texture_path = os.path.join(tile_path, TILE_TEXTURE_FILENAME)
             output_texture_path = os.path.join(args.output_dir, "%d_%d_%d.jpg" % (i, j, tile_min.zone))
-            #subprocess.run(["copy", tile_texture_path, output_texture_path])
+            # TODO why is subprocess not working here?
             os.system("copy %s %s" % (tile_texture_path, output_texture_path))
 
             # Log the status

@@ -16,11 +16,13 @@ from geojson_utils import *
 from latlon_to_utm import *
 from svg_utils import *
 from tile_id import *
+from tiff_utils import *
 
 def main():
     parser = argparse.ArgumentParser(description="Create tile mesh OBJ files.")
-    parser.add_argument("-d", "--data_directory", required=True, help="Name of output directory")
-    parser.add_argument("-c", "--city_name", required=True, help="Name of city (sub-directory of output directory)")
+    parser.add_argument("-t", "--tile-directory", required=True, help="Name of tile directory")
+    parser.add_argument("-c", "--city-name", required=True, help="Name of city (sub-directory of output directory)")
+    parser.add_argument("--dem-path", required=True, help="Path to GeoTIFF DEM file")
     parser.add_argument("--sw", required=True, help='SW corner formatted as "lat,lon" or "lat, lon"')
     parser.add_argument("--ne", required=True, help='NE corner formatted as "lat,lon" or "lat, lon"')
 
@@ -42,9 +44,14 @@ def main():
     print("You have specified %d tile%s." % (num_tiles,  "s" if num_tiles > 1 else ""))
 
     TILE_TEXTURE_FILENAME = "tile_texture.jpg"
-    city_directory = os.path.join(args.data_directory, args.city_name)
+    city_directory = os.path.join(args.tile_directory, args.city_name)
     MTL_FILENAME = "tile.mtl"
     OBJ_FILENAME = "tile.obj"
+    TERRAIN_MESH_RES = 1000
+    TERRAIN_MESH_ROW_SIZE = int(TileID.TILE_SIZE / TERRAIN_MESH_RES)
+
+    # Load the DEM
+    dem = GeoTiffInterpolater(args.dem_path)
  
     # Iterate over every tile, creating an OBJ manually.
     start_time = time.time()
@@ -52,6 +59,7 @@ def main():
     for i in range(min_i, max_i + 1):
         for j in range(min_j, max_j + 1):
             current_tile = TileID.tile_indices_to_object(i, j, tile_min.zone)
+            sw_x, sw_y = current_tile.sw_corner()
             full_path = os.path.join(city_directory, "%d_%d_%d" % (i, j, tile_min.zone))
             
             # Create the MTL file (the easy part)
@@ -68,22 +76,37 @@ def main():
             # Start the OBJ file
             obj_path = os.path.join(full_path, OBJ_FILENAME)
             f = open(obj_path, 'w')
-            
-            # Add the terrain. For, it is flat with only 4 vertices.
+
+            # The header is always this
             f.write("mtllib %s\n" % (MTL_FILENAME))
-            f.write("v    0.000000    0.000000    0.000000\n")
-            f.write("v    0.000000    0.000000    %f\n" % (TileID.TILE_SIZE))
-            f.write("v    %f    0.000000    %f\n" % (TileID.TILE_SIZE, TileID.TILE_SIZE))
-            f.write("v    %f    0.000000    0.000000\n" % (TileID.TILE_SIZE))
-            # These are UV coordinates
-            f.write("vt   0.000000    0.000000\n")
-            f.write("vt   1.000000    0.000000\n")
-            f.write("vt   1.000000    1.000000\n")
-            f.write("vt   0.000000    1.000000\n")
+
+            # Add the terrain. Use the DEM.
+            for local_x in range(0, TileID.TILE_SIZE + TERRAIN_MESH_RES, TERRAIN_MESH_RES):
+                for local_y in range(0, TileID.TILE_SIZE + TERRAIN_MESH_RES, TERRAIN_MESH_RES):
+                    # Compute the elevation and write the vertex's coordinates
+                    elevation = dem.interpolate(sw_x + local_x, sw_y + local_y)
+                    print("running interpolate on %f %f yields %f" % (sw_x + local_x, sw_y + local_y, elevation))
+                    f.write("v    %.6f    %.6f    %.6f\n" % (local_x, elevation, local_y))
+
+                    # Compute and write the UV for this vertex
+                    f.write("vt    %.6f    %.6f\n" % (local_y / TileID.TILE_SIZE, local_x / TileID.TILE_SIZE))
+
+            # Now we have to do the faces, which is harder. This is triangulating.
             f.write("g terrain\n")
             f.write("usemtl %s\n" % (material_name))
-            f.write("f 1/1 2/2 3/3\n")
-            f.write("f 1/1 3/3 4/4")
+            for x_index in range(TERRAIN_MESH_ROW_SIZE):
+                column_min_index = 1 + x_index * (TERRAIN_MESH_ROW_SIZE + 1)
+                for y_index in range(TERRAIN_MESH_ROW_SIZE):
+                    # Bottom right triangle
+                    p1 = column_min_index + y_index
+                    p2 = p1 + TERRAIN_MESH_ROW_SIZE + 1
+                    p3 = p2 + 1
+                    f.write("f %d/%d %d/%d %d/%d\n" % (p1, p1, p2, p2, p3, p3))
+                    # Top left triangle
+                    p1 = p1
+                    p2 = p3
+                    p3 = p1 + 1
+                    f.write("f %d/%d %d/%d %d/%d\n" % (p1, p1, p2, p2, p3, p3))
             f.close()
 
             # Log the status

@@ -19,8 +19,8 @@ from tile_id import *
 
 def main():
     parser = argparse.ArgumentParser(description="Create tile texture SVGs and JPGs for tiles.")
-    parser.add_argument("-d", "--data_directory", required=True, help="Name of output directory")
-    parser.add_argument("-c", "--city_name", required=True, help="Name of city (sub-directory of output directory that will be created)")
+    parser.add_argument("-t", "--tile-directory", required=True, help="Name of tile directory")
+    parser.add_argument("-c", "--city-name", required=True, help="Name of city (sub-directory of output directory that will be created)")
     parser.add_argument("--sw", required=True, help='SW corner formatted as "lat,lon" or "lat, lon"')
     parser.add_argument("--ne", required=True, help='NE corner formatted as "lat,lon" or "lat, lon"')
 
@@ -46,7 +46,7 @@ def main():
     WATER_FILENAME = "water_polygons.geojson"
     SVG_FILENAME = "tile_texture.svg"
     JPG_FILENAME = "tile_texture.jpg"
-    city_directory = os.path.join(args.data_directory, args.city_name)
+    city_directory = os.path.join(args.tile_directory, args.city_name)
     ROAD_COLOR = "rgb(60,60,60)"
     GRASS_COLOR = "rgb(0,180,20)"
     SIDEWALK_COLOR = "rgb(128,128,128)"

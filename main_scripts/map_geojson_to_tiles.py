@@ -35,14 +35,14 @@ def get_overlapping_tiles(shapely_polygon_utm, zone):
 
 def main():
     parser = argparse.ArgumentParser(description="Map geojson polygons into tiles.")
-    parser.add_argument("-i", "--input_filepath", required=True, help="Path to input geojson file")  
-    parser.add_argument("-o", "--output_filename", required=True, help="Name of output file to write in tiles")
-    parser.add_argument("-d", "--data_directory", required=True, help="Name of output directory")
-    parser.add_argument("-c", "--city_name", required=True, help="Name of city (sub-directory of output directory that will be created)")
+    parser.add_argument("-i", "--input-filepath", required=True, help="Path to input geojson file")  
+    parser.add_argument("-o", "--output-filename", required=True, help="Name of output file to write in tiles")
+    parser.add_argument("-t", "--tile-directory", required=True, help="Name of tile directory")
+    parser.add_argument("-c", "--city-name", required=True, help="Name of city (sub-directory of output directory that will be created)")
     parser.add_argument("--sw", required=True, help='SW corner formatted as "lat,lon" or "lat, lon"')
     parser.add_argument("--ne", required=True, help='NE corner formatted as "lat,lon" or "lat, lon"')
-    parser.add_argument("--offset_x", required=False, type=int, default=0, help='Offset x coord of each point')
-    parser.add_argument("--offset_y", required=False, type=int, default=0, help='Offset y coord of each point')
+    parser.add_argument("--offset-x", required=False, type=int, default=0, help='Offset x coord of each point')
+    parser.add_argument("--offset-y", required=False, type=int, default=0, help='Offset y coord of each point')
     group = parser.add_mutually_exclusive_group(required=True)
     group.add_argument("--time", action='store_true', help='Optimize for time')
     group.add_argument("--memory", action='store_true', help='Optimize for memory usage')
@@ -66,13 +66,15 @@ def main():
 
     # Set the variables that will be used in every tile
     geojson_crs = { "type": "name", "properties": { "name": "urn:ogc:def:crs:EPSG::322%d" % (tile_min.zone)}}
-    city_directory = os.path.join(args.data_directory, args.city_name)
+    city_directory = os.path.join(args.tile_directory, args.city_name)
 
     # Try to create the directory, in case it doesn't exist
-    p = subprocess.Popen(['mkdir', args.data_directory], shell=True)
+    p = subprocess.Popen(['mkdir', args.tile_directory], shell=True)
     p.communicate()
     p = subprocess.Popen(['mkdir', city_directory], shell=True)
     p.communicate()
+
+    geojson.geometry.DEFAULT_PRECISION = 10
 
     # Read the contents of the geojson file
     f = open(args.input_filepath)

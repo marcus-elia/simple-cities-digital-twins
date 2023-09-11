@@ -43,13 +43,15 @@ def main():
 
     ROAD_FILENAME = "road_polygons.geojson"
     SIDEWALK_FILENAME = "sidewalk_polygons.geojson"
+    PARKING_FILENAME = "parking_polygons.geojson"
     WATER_FILENAME = "water_polygons.geojson"
     SVG_FILENAME = "tile_texture.svg"
     JPG_FILENAME = "tile_texture.jpg"
     city_directory = os.path.join(args.tile_directory, args.city_name)
-    ROAD_COLOR = "rgb(60,60,60)"
-    GRASS_COLOR = "rgb(0,180,20)"
-    SIDEWALK_COLOR = "rgb(128,128,128)"
+    ROAD_COLOR = "rgb(80,80,80)"
+    GRASS_COLOR = "rgb(0,150,20)"
+    SIDEWALK_COLOR = "rgb(168,168,168)"
+    PARKING_COLOR = "rgb(128, 128,128)"
     WATER_COLOR = "rgb(0,140,190)"
     JPG_SIZE = 4096
 
@@ -82,6 +84,16 @@ def main():
             for geojson_multipolygon in sidewalk_geojson_contents['features']:
                 shapely_sidewalk_polygons += geojson_multipoly_to_shapely(geojson_multipolygon['geometry']['coordinates'])
 
+            # Read the contents of the parking lot geojson file
+            f = open(os.path.join(full_path, PARKING_FILENAME))
+            parking_geojson_contents = geojson.loads(f.read())
+            f.close()
+
+            # Convert parking lots to shapely polygons
+            shapely_parking_polygons = []
+            for geojson_multipolygon in parking_geojson_contents['features']:
+                shapely_parking_polygons += geojson_multipoly_to_shapely(geojson_multipolygon['geometry']['coordinates'])
+
             # Read the contents of the water geojson file
             f = open(os.path.join(full_path, WATER_FILENAME))
             water_geojson_contents = geojson.loads(f.read())
@@ -96,6 +108,7 @@ def main():
             color_polygons_pairs = [(GRASS_COLOR, [current_tile.polygon_xy_flipped()]),\
                     (WATER_COLOR, shapely_water_polygons),\
                     (ROAD_COLOR, shapely_road_polygons),\
+                    (PARKING_COLOR, shapely_parking_polygons),\
                     (SIDEWALK_COLOR, shapely_sidewalk_polygons)]
             svg_path = os.path.join(full_path, SVG_FILENAME)
             create_tile_svg(current_tile, color_polygons_pairs, svg_path)

@@ -23,11 +23,9 @@ class GeoTiffInterpolater:
         i_above = i_below + 1
         j_below = int((y - self.min_y) / self.res_y)
         j_above = j_below + 1
-        print("interpolating between indices %d %d %d %d" % (i_below, j_below, i_above, j_above))
 
         # If out of bounds, return 0
         if i_below < 0 or i_above >= self.cols or j_below < 0 or j_above >= self.rows:
-            print("OOB interpolate")
             return 0
 
         # Access the 4 values we are interpolating between
@@ -35,7 +33,6 @@ class GeoTiffInterpolater:
         se = self.array[i_above, j_below]
         ne = self.array[i_above, j_above]
         nw = self.array[i_below, j_above]
-        print("values are %f %f %f %f" % (sw, se, ne, nw))
 
         # Determine how far the point is from the raster grid
         dist_x_below = abs(x - (self.min_x + self.res_x * i_below))

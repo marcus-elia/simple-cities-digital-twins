@@ -47,7 +47,7 @@ def main():
     city_directory = os.path.join(args.tile_directory, args.city_name)
     MTL_FILENAME = "tile.mtl"
     OBJ_FILENAME = "tile.obj"
-    TERRAIN_MESH_RES = 1000
+    TERRAIN_MESH_RES = 100
     TERRAIN_MESH_ROW_SIZE = int(TileID.TILE_SIZE / TERRAIN_MESH_RES)
 
     # Load the DEM
@@ -84,8 +84,8 @@ def main():
             for local_x in range(0, TileID.TILE_SIZE + TERRAIN_MESH_RES, TERRAIN_MESH_RES):
                 for local_y in range(0, TileID.TILE_SIZE + TERRAIN_MESH_RES, TERRAIN_MESH_RES):
                     # Compute the elevation and write the vertex's coordinates
-                    elevation = dem.interpolate(sw_x + local_x, sw_y + local_y)
-                    print("running interpolate on %f %f yields %f" % (sw_x + local_x, sw_y + local_y, elevation))
+                    # TODO explain why x is flipped here
+                    elevation = dem.interpolate(sw_x + TileID.TILE_SIZE - local_x, sw_y + local_y)
                     f.write("v    %.6f    %.6f    %.6f\n" % (local_x, elevation, local_y))
 
                     # Compute and write the UV for this vertex

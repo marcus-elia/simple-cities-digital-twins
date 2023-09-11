@@ -116,14 +116,8 @@ def main():
             f.close()
 
             # Every point needs to be offset by a certain amount
-            vertex_offset_x = i * TileID.TILE_SIZE
-            vertex_offset_z = j * TileID.TILE_SIZE
-
-            # Every UV coordinate needs to be scaled and offset
-            u_min = i / (max_i - min_i)
-            v_min = j / (max_j - min_j)
-            u_max = (i + 1) / (max_i - min_i)
-            v_max = (j + 1) / (max_j - min_j)
+            vertex_offset_x = (i - min_i) * TileID.TILE_SIZE
+            vertex_offset_z = (j - min_j) * TileID.TILE_SIZE
 
             # The number of vertices already added to the OBJ is how much to offset
             # each index by here
@@ -143,12 +137,7 @@ def main():
                     obj_file.write("v    %.6f    %.6f    %.6f\n" % (x, y, z))
                     vertex_num += 1
                 elif line.startswith("vt"):
-                    uv_coords = line.split()[1:]
-                    u = float(uv_coords[0])
-                    v = float(uv_coords[1])
-                    u = u_min + u * (u_max - u_min)
-                    v = v_min + v * (v_max - v_min)
-                    obj_file.write("vt    %.6f    %.6f\n" % (u, v))
+                    obj_file.write(line)
                     uv_num += 1
                 elif line.startswith("g "):
                     group_name = line[2:]

@@ -116,7 +116,8 @@ def main():
             f.close()
 
             # Every point needs to be offset by a certain amount
-            vertex_offset_x = (i - min_i) * TileID.TILE_SIZE
+            # Flip over the x-axis because mesh viewers had it inverted otherwise
+            vertex_offset_x = (max_i - i) * TileID.TILE_SIZE
             vertex_offset_z = (j - min_j) * TileID.TILE_SIZE
 
             # The number of vertices already added to the OBJ is how much to offset
@@ -137,7 +138,11 @@ def main():
                     obj_file.write("v    %.6f    %.6f    %.6f\n" % (x, y, z))
                     vertex_num += 1
                 elif line.startswith("vt"):
-                    obj_file.write(line)
+                    u,v = line.split()[1:]
+                    u = float(u.strip())
+                    v = float(v.strip())
+                    # Do some u/v flipping to make the OBJ oriented correctly in mesh viewers
+                    obj_file.write("vt %.6f %.6f\n" % (1 - v, u))
                     uv_num += 1
                 elif line.startswith("g "):
                     group_name = line[2:]

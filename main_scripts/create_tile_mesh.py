@@ -77,9 +77,9 @@ def main():
             f.write("v    %f    0.000000    0.000000\n" % (TileID.TILE_SIZE))
             # These are UV coordinates
             f.write("vt   0.000000    0.000000\n")
-            f.write("vt   0.000000    1.000000\n")
-            f.write("vt   1.000000    1.000000\n")
             f.write("vt   1.000000    0.000000\n")
+            f.write("vt   1.000000    1.000000\n")
+            f.write("vt   0.000000    1.000000\n")
             f.write("g terrain\n")
             f.write("usemtl %s\n" % (material_name))
             f.write("f 1/1 2/2 3/3\n")

@@ -13,7 +13,8 @@ class GeoTiffInterpolater:
         self.geo_tiff = GeoTiff(filepath)
         self.min_x, self.min_y = self.geo_tiff.tif_bBox[0]
         self.max_x, self.max_y = self.geo_tiff.tif_bBox[1]
-        self.array = np.array(self.geo_tiff.read())
+        # TODO why is this transpose needed?
+        self.array = np.array(self.geo_tiff.read()).transpose()
         self.cols, self.rows = self.array.shape
         self.res_x = (self.max_x - self.min_x) / self.cols
         self.res_y = (self.max_y - self.min_y) / self.rows

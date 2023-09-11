@@ -47,7 +47,7 @@ def main():
     city_directory = os.path.join(args.tile_directory, args.city_name)
     MTL_FILENAME = "tile.mtl"
     OBJ_FILENAME = "tile.obj"
-    TERRAIN_MESH_RES = 100
+    TERRAIN_MESH_RES = 25
     TERRAIN_MESH_ROW_SIZE = int(TileID.TILE_SIZE / TERRAIN_MESH_RES)
 
     # Load the DEM

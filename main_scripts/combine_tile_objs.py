@@ -80,28 +80,27 @@ def main():
             mtl_path = os.path.join(tile_path, TILE_MTL_FILENAME)
             f = open(mtl_path, 'r')
             lines = f.readlines()
-            line_index = 0
-            # TODO this MTL parsing is fragile
-            while line_index < len(lines):
-                line = lines[line_index]
+            f.close()
+
+            # Add lines from the original MTL to the combined MTL, skipping
+            # lines from duplicated materials
+            skip_line = False
+            for line in lines:
                 if line.startswith("newmtl"):
                     material_name = line.split()[-1].strip()
                     if not material_name in material_names:
+                        skip_line = False
                         material_names.add(material_name)
                         mtl_file.write(line)
-                        line_index += 1
-                        if line_index < len(lines):
-                            line = lines[line_index]
-                        while line_index < len(lines) and not line.startswith("newmtl"):
-                            line = lines[line_index]
-                            if line.endswith(TILE_TEXTURE_FILENAME):
-                                # Rename the tile texture file to be unique for each tile
-                                mtl_file.write("map_Kd %d_%d_%d.jpg\n\n" % (i, j, tile_min.zone))
-                            else:
-                                mtl_file.write(line)
-                            line_index += 1
-                line_index += 1
-            f.close()
+                    else:
+                        skip_line = True
+                elif skip_line:
+                    continue
+                elif line.strip().endswith(TILE_TEXTURE_FILENAME):
+                    # Rename the tile texture file to be unique for each tile
+                    mtl_file.write("map_Kd %d_%d_%d.jpg\n\n" % (i, j, tile_min.zone))
+                else:
+                    mtl_file.write(line)
 
             # Copy the tile texture into the output directory
             tile_texture_path = os.path.join(tile_path, TILE_TEXTURE_FILENAME)
@@ -154,11 +153,16 @@ def main():
                     new_line = "f"
                     for vertex in vertices:
                         new_line += " "
-                        vertex_index, uv_index = vertex.split('/')
-                        vertex_index = int(vertex_index) + vertex_offset
-                        uv_index = int(uv_index) + uv_offset
-                        new_line += "%d/%d" % (vertex_index, uv_index)
-                        obj_file.write(new_line + "\n")
+                        # The vertex may or may not contain a UV index
+                        if '/' in vertex:
+                            vertex_index, uv_index = vertex.split('/')
+                            vertex_index = int(vertex_index) + vertex_offset
+                            uv_index = int(uv_index) + uv_offset
+                            new_line += "%d/%d" % (vertex_index, uv_index)
+                        else:
+                            vertex_index = int(vertex) + vertex_offset
+                            new_line += str(vertex_index)
+                    obj_file.write(new_line + "\n")
 
             # Log the status
             time_elapsed = time.time() - start_time

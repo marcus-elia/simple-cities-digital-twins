@@ -26,8 +26,7 @@ def query_building_elevations(shapely_building_polygon, dem_interpolater):
     """
     lowest = sys.float_info.max
     highest = sys.float_info.min
-    # TODO x and y shouldn't have to be flipped here, fix the polygon utility function
-    for y, x in shapely_building_polygon.exterior.coords:
+    for x, y in shapely_building_polygon.exterior.coords:
         elevation = dem_interpolater.interpolate(x, y)
         lowest = min(lowest, elevation)
         highest = max(highest, elevation)
@@ -36,38 +35,51 @@ def query_building_elevations(shapely_building_polygon, dem_interpolater):
 
 def get_convex_hull_reflected_across_tile_x(polygon, tile):
     sw_x, sw_y = tile.sw_corner()
-    tile_max_y = sw_y + TileID.TILE_SIZE
+    tile_max_x = sw_x + TileID.TILE_SIZE
     original_convex_hull = polygon.convex_hull.exterior.coords
     reflected_convex_hull = []
     for x, y in original_convex_hull:
-        new_x = sw_y + (tile_max_y - x)
-        # TODO x and y shouldn't have to be flipped here
+        new_x = sw_x + (tile_max_x - x)
         reflected_convex_hull.append((new_x, y))
     return shapely.Polygon(reflected_convex_hull)
 
 def get_convex_hull_reflected_across_tile_y(polygon, tile):
     sw_x, sw_y = tile.sw_corner()
-    tile_max_x = sw_x + TileID.TILE_SIZE
+    tile_max_y = sw_y + TileID.TILE_SIZE
     original_convex_hull = polygon.convex_hull.exterior.coords
     reflected_convex_hull = []
     for x, y in original_convex_hull:
-        new_y = sw_x + (tile_max_x - y)
-        # TODO x and y shouldn't have to be flipped here
+        new_y = sw_y + (tile_max_y - y)
         reflected_convex_hull.append((x, new_y))
     return shapely.Polygon(reflected_convex_hull)
 
-def get_convex_hull_reflected_across_tile_both(polygon, tile):
+def get_convex_hull_reflected_across_tile_both_positive(polygon, tile):
     sw_x, sw_y = tile.sw_corner()
+    # Pretend the SW corner of the tile is (0,0) and reflect across y = x
+    origin_x = sw_x
+    origin_y = sw_y
+    original_convex_hull = polygon.convex_hull.exterior.coords
+    reflected_convex_hull = []
+    for x, y in original_convex_hull:
+        local_x = x - origin_x
+        local_y = y - origin_y
+        new_x = local_y + origin_x
+        new_y = local_x + origin_y
+        reflected_convex_hull.append((new_x, new_y))
+    return shapely.Polygon(reflected_convex_hull)
+
+def get_convex_hull_reflected_across_tile_both_negative(polygon, tile):
+    sw_x, sw_y = tile.sw_corner()
+    # Pretend the NW corner of the tile is (0,0) and reflect across y = -x
     origin_x = sw_x
     origin_y = sw_y + TileID.TILE_SIZE
     original_convex_hull = polygon.convex_hull.exterior.coords
     reflected_convex_hull = []
     for x, y in original_convex_hull:
-        local_x = x - origin_y
-        local_y = y - origin_x
-        new_x = -local_y + origin_y
-        new_y = -local_x + origin_x
-        # TODO x and y shouldn't have to be flipped here
+        local_x = x - origin_x
+        local_y = y - origin_y
+        new_x = -local_y + origin_x
+        new_y = -local_x + origin_y
         reflected_convex_hull.append((new_x, new_y))
     return shapely.Polygon(reflected_convex_hull)
 
@@ -184,26 +196,24 @@ def main():
             starting_vertex_index = (TERRAIN_MESH_ROW_SIZE + 1) * (TERRAIN_MESH_ROW_SIZE + 1) + 1
             for building in shapely_building_polygons:
                 # Determine the elevation/height properties
-                convex_hull = building.convex_hull
-                # TODO should not need to reflect
-                reflected_convex_hull = get_convex_hull_reflected_across_tile_both(building, current_tile)
-                lowest_elevation, highest_elevation = query_building_elevations(reflected_convex_hull, dem)
+                # TODO explain why the building needs to be reflected across y=x within the tile
+                convex_hull = get_convex_hull_reflected_across_tile_both_positive(building, current_tile)
+                # TODO Wny does interpolating the dem require a differently-reflected building?
+                dem_convex_hull = get_convex_hull_reflected_across_tile_both_negative(building, current_tile)
+                lowest_elevation, highest_elevation = query_building_elevations(dem_convex_hull, dem)
                 above_ground_height = 5
                 height = above_ground_height + highest_elevation - lowest_elevation
 
                 # Write the vertices of the building
                 # Add a point at the center of the top face for triangulating
-                # TODO x and y shouldn't have to be flipped here, fix the polygon utility function
-                f.write("v    %.6f    %.6f    %.6f\n" % (convex_hull.centroid.x - sw_y, lowest_elevation + height, convex_hull.centroid.y - sw_x))
+                f.write("v    %.6f    %.6f    %.6f\n" % (convex_hull.centroid.x - sw_x, lowest_elevation + height, convex_hull.centroid.y - sw_y))
                 # Slice to avoid the duplicated starting point
                 vertices = list(convex_hull.exterior.coords)[:-1]
                 for x, y in vertices:
                     # Point on the base of the building
-                    # TODO x and y shouldn't have to be flipped here, fix the polygon utility function
-                    f.write("v    %.6f    %.6f    %.6f\n" % (x - sw_y, lowest_elevation, y - sw_x))
+                    f.write("v    %.6f    %.6f    %.6f\n" % (x - sw_x, lowest_elevation, y - sw_y))
                     # Point on the top of the building
-                    # TODO x and y shouldn't have to be flipped here, fix the polygon utility function
-                    f.write("v    %.6f    %.6f    %.6f\n" % (x - sw_y, lowest_elevation + height, y - sw_x))
+                    f.write("v    %.6f    %.6f    %.6f\n" % (x - sw_x, lowest_elevation + height, y - sw_y))
                     # For now, buildings don't have textures, just colors. So no UVs.
 
                 # Write the header of the building

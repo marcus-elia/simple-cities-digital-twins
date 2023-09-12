@@ -85,27 +85,33 @@ def main():
                 shapely_sidewalk_polygons += geojson_multipoly_to_shapely(geojson_multipolygon['geometry']['coordinates'])
 
             # Read the contents of the parking lot geojson file
-            f = open(os.path.join(full_path, PARKING_FILENAME))
-            parking_geojson_contents = geojson.loads(f.read())
-            f.close()
-
-            # Convert parking lots to shapely polygons
             shapely_parking_polygons = []
-            for geojson_multipolygon in parking_geojson_contents['features']:
-                shapely_parking_polygons += geojson_multipoly_to_shapely(geojson_multipolygon['geometry']['coordinates'])
+            try:
+                f = open(os.path.join(full_path, PARKING_FILENAME))
+                parking_geojson_contents = geojson.loads(f.read())
+                f.close()
+
+                # Convert parking lots to shapely polygons
+                for geojson_multipolygon in parking_geojson_contents['features']:
+                    shapely_parking_polygons += geojson_multipoly_to_shapely(geojson_multipolygon['geometry']['coordinates'])
+            except FileNotFoundError:
+                pass
 
             # Read the contents of the water geojson file
-            f = open(os.path.join(full_path, WATER_FILENAME))
-            water_geojson_contents = geojson.loads(f.read())
-            f.close()
-
-            # Convert water to shapely polygons
             shapely_water_polygons = []
-            for geojson_multipolygon in water_geojson_contents['features']:
-                shapely_water_polygons += geojson_multipoly_to_shapely(geojson_multipolygon['geometry']['coordinates'])
+            try:
+                f = open(os.path.join(full_path, WATER_FILENAME))
+                water_geojson_contents = geojson.loads(f.read())
+                f.close()
+
+                # Convert water to shapely polygons
+                for geojson_multipolygon in water_geojson_contents['features']:
+                    shapely_water_polygons += geojson_multipoly_to_shapely(geojson_multipolygon['geometry']['coordinates'])
+            except FileNotFoundError:
+                pass
 
             # Write a SVG to the tile
-            color_polygons_pairs = [(GRASS_COLOR, [current_tile.polygon_xy_flipped()]),\
+            color_polygons_pairs = [(GRASS_COLOR, [current_tile.polygon()]),\
                     (WATER_COLOR, shapely_water_polygons),\
                     (ROAD_COLOR, shapely_road_polygons),\
                     (PARKING_COLOR, shapely_parking_polygons),\

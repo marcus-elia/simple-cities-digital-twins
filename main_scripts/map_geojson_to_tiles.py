@@ -156,8 +156,8 @@ def main():
         # Now iterate over every polygon in the geojson, intersecting only with relevant tiles
         for geojson_multipolygon in geojson_contents['features']:
             shapely_polygons = geojson_multipoly_to_shapely(geojson_multipolygon.geometry.coordinates)
-            for shapely_polygon_latlon in shapely_polygons:
-                shapely_polygon_utm = poly_latlon_to_utm(shapely_polygon_latlon, offset=(args.offset_x, args.offset_y))
+            for shapely_polygon_lonlat in shapely_polygons:
+                shapely_polygon_utm = poly_lonlat_to_utm(shapely_polygon_lonlat, offset=(args.offset_x, args.offset_y))
 
                 # With the polygon in UTM, determine which tiles overlap with its bbox.
                 # Also, make sure it doesn't go beyond the user-specified tile area.

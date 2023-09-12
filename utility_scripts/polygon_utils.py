@@ -3,24 +3,24 @@
 import shapely
 import utm
 
-def poly_latlon_to_utm(poly_latlon, offset=(0,0)):
+def poly_lonlat_to_utm(poly_lonlat, offset=(0,0)):
     """
     Convert a shapely polygon from lat/lon to UTM. This does both
     the exterior and the holes. If an offset is specified, it is
     added to every point (in UTM).
     """
     # First, don't do anything to an empty polygon
-    if len(poly_latlon.exterior.coords) == 0:
+    if len(poly_lonlat.exterior.coords) == 0:
         return shapely.Polygon()
 
     # Get the UTM zone of the first point
-    _, _, original_zone, _ = utm.from_latlon(poly_latlon.exterior.coords[0][0], poly_latlon.exterior.coords[0][1])
+    _, _, original_zone, _ = utm.from_latlon(poly_lonlat.exterior.coords[0][1], poly_lonlat.exterior.coords[0][0])
 
     # Iterate over the outer boundary and convert it
     outer_boundary_utm = []
-    for latlon_point in poly_latlon.exterior.coords:
+    for lonlat_point in poly_lonlat.exterior.coords:
         # Convert
-        x, y, zone, letter = utm.from_latlon(latlon_point[0], latlon_point[1])
+        x, y, zone, letter = utm.from_latlon(lonlat_point[1], lonlat_point[0])
 
         # Check for a UTM zone crossing
         if zone != original_zone:
@@ -32,11 +32,11 @@ def poly_latlon_to_utm(poly_latlon, offset=(0,0)):
 
     # Do the holes
     holes_utm = []
-    for hole in poly_latlon.interiors:
+    for hole in poly_lonlat.interiors:
         hole_utm = []
-        for latlon_point in hole.coords:
+        for lonlat_point in hole.coords:
             # Convert
-            x, y, zone, letter = utm.from_latlon(latlon_point[0], latlon_point[1])
+            x, y, zone, letter = utm.from_latlon(lonlat_point[1], lonlat_point[0])
 
             # Check for a UTM zone crossing
             if zone != original_zone:

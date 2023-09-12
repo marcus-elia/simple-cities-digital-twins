@@ -15,19 +15,19 @@ def geojson_poly_to_shapely(geojson_polygon):
     # Single polygon with no holes
     if type(geojson_polygon[0][0]) != list:
         outer_boundary = []
-        for lon,lat in geojson_polygon:
-            outer_boundary.append((lat, lon))
+        for x,y in geojson_polygon:
+            outer_boundary.append((x, y))
         return shapely.Polygon(outer_boundary)
     
     # A polygon that does have holes
     outer_boundary = []
     holes = []
-    for lon,lat in geojson_polygon[0]:
-        outer_boundary.append((lat, lon))
+    for x,y in geojson_polygon[0]:
+        outer_boundary.append((x, y))
     for geojson_hole in geojson_polygon[1:]:
         hole = []
-        for lon,lat in geojson_hole:
-            hole.append((lat, lon))
+        for x,y in geojson_hole:
+            hole.append((x, y))
         holes.append(hole)
 
     return shapely.Polygon(outer_boundary, holes)

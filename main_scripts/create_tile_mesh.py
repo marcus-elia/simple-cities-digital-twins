@@ -117,12 +117,15 @@ def main():
             full_path = os.path.join(city_directory, "%d_%d_%d" % (i, j, tile_min.zone))
 
             # Load the buildings geojson file
-            f = open(os.path.join(full_path, BUILDINGS_FILENAME))
-            buildings_geojson_contents = geojson.loads(f.read())
-            f.close()
             shapely_building_polygons = []
-            for geojson_multipolygon in buildings_geojson_contents['features']:
-                shapely_building_polygons += geojson_multipoly_to_shapely(geojson_multipolygon['geometry']['coordinates'])
+            try:
+                f = open(os.path.join(full_path, BUILDINGS_FILENAME))
+                buildings_geojson_contents = geojson.loads(f.read())
+                f.close()
+                for geojson_multipolygon in buildings_geojson_contents['features']:
+                    shapely_building_polygons += geojson_multipoly_to_shapely(geojson_multipolygon['geometry']['coordinates'])
+            except FileNotFoundError:
+                pass
 
             # Create the MTL file (the easy part)
             mtl_path = os.path.join(full_path, MTL_FILENAME)

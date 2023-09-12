@@ -21,14 +21,12 @@ def create_tile_svg(tile, color_polygons_pairs, output_filepath):
             f.write('\t\tfill="%s"\n' % (color))
             vertices_string = '\t\td="M '
             for x,y in shapely_polygon.exterior.coords:
-                # TODO Why are the polygons (y, x)?
-                vertices_string += '%f,%f ' % (y - x_min, TileID.TILE_SIZE - (x - y_min))
+                vertices_string += '%f,%f ' % (x - x_min, TileID.TILE_SIZE - (y - y_min))
             vertices_string += 'z\n'
             for hole in shapely_polygon.interiors:
                 vertices_string += 'M '
                 for x,y in hole.coords:
-                    # TODO Why are the polygons (y, x)?
-                    vertices_string += '%f,%f ' % (y - x_min, TileID.TILE_SIZE - (x - y_min))
+                    vertices_string += '%f,%f ' % (x - x_min, TileID.TILE_SIZE - (y - y_min))
                 vertices_string += 'z\n'
             vertices_string += '" />\n'
             f.write(vertices_string)

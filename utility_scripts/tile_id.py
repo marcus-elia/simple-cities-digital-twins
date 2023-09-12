@@ -56,6 +56,29 @@ class TileID:
         y = (j + 0.5) * size
         return TileID(x, y, zone)
 
+    def flip_point_over_tile_center_x(self, x, y):
+        sw_x, sw_y = self.sw_corner()
+        local_x = x - sw_x
+        return sw_x + TileID.TILE_SIZE - local_x, y
+
+    def flip_point_over_tile_center_y(self, x, y):
+        sw_x, sw_y = self.sw_corner()
+        local_y = y - sw_y
+        return x, sw_y + TileID.TILE_SIZE - local_y
+
+    def flip_point_over_y_equals_x(self, x, y):
+        sw_x, sw_y = self.sw_corner()
+        local_x = x - sw_x
+        local_y = y - sw_y
+        return sw_x + local_y, sw_y + local_x
+
+    def flip_point_over_y_equals_negative_x(self, x, y):
+        sw_x, sw_y = self.sw_corner()
+        sw_y += TileID.TILE_SIZE
+        local_x = x - sw_x
+        local_y = y - sw_y
+        return sw_x - local_y, sw_y - local_x
+
 def main():
     parser = argparse.ArgumentParser(description="Print out the information of the tile containing the given lat/lon.")
     parser.add_argument('lat') 

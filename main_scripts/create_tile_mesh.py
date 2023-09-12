@@ -83,6 +83,16 @@ def get_convex_hull_reflected_across_tile_both_negative(polygon, tile):
         reflected_convex_hull.append((new_x, new_y))
     return shapely.Polygon(reflected_convex_hull)
 
+def get_convex_hull_double_flipped(polygon, tile):
+    original_convex_hull = polygon.convex_hull.exterior.coords
+    transformed_convex_hull = []
+    for x,y in original_convex_hull:
+        new_x, new_y = tile.flip_point_over_y_equals_x(x, y)
+        new_x, new_y = tile.flip_point_over_tile_center_x(new_x, new_y)
+        #new_x, new_y = tile.flip_point_over_y_equals_x(new_x, new_y)
+        transformed_convex_hull.append((new_x, new_y))
+    return shapely.Polygon(transformed_convex_hull)
+
 def main():
     parser = argparse.ArgumentParser(description="Create tile mesh OBJ files.")
     parser.add_argument("-t", "--tile-directory", required=True, help="Name of tile directory")
@@ -165,8 +175,9 @@ def main():
             for local_x in range(0, TileID.TILE_SIZE + TERRAIN_MESH_RES, TERRAIN_MESH_RES):
                 for local_y in range(0, TileID.TILE_SIZE + TERRAIN_MESH_RES, TERRAIN_MESH_RES):
                     # Compute the elevation and write the vertex's coordinates
-                    # TODO explain why x is flipped here
-                    elevation = dem.interpolate(sw_x + TileID.TILE_SIZE - local_x, sw_y + local_y)
+                    # TODO explain why x and y are swapped here
+                    elevation = dem.interpolate(sw_x + local_y, sw_y + local_x)
+                    #elevation = dem.interpolate(sw_x + TileID.TILE_SIZE - local_x, sw_y + local_y)
                     f.write("v    %.6f    %.6f    %.6f\n" % (local_x, elevation, local_y))
 
                     # Compute and write the UV for this vertex
@@ -198,14 +209,14 @@ def main():
                 # Determine the elevation/height properties
                 # TODO explain why the building needs to be reflected across y=x within the tile
                 convex_hull = get_convex_hull_reflected_across_tile_both_positive(building, current_tile)
-                # TODO Wny does interpolating the dem require a differently-reflected building?
-                dem_convex_hull = get_convex_hull_reflected_across_tile_both_negative(building, current_tile)
+                dem_convex_hull = building.convex_hull
                 lowest_elevation, highest_elevation = query_building_elevations(dem_convex_hull, dem)
                 above_ground_height = 5
                 height = above_ground_height + highest_elevation - lowest_elevation
 
                 # Write the vertices of the building
                 # Add a point at the center of the top face for triangulating
+                f.write("# Building vertices\n")
                 f.write("v    %.6f    %.6f    %.6f\n" % (convex_hull.centroid.x - sw_x, lowest_elevation + height, convex_hull.centroid.y - sw_y))
                 # Slice to avoid the duplicated starting point
                 vertices = list(convex_hull.exterior.coords)[:-1]

@@ -19,7 +19,7 @@ from latlon_to_utm import *
 from polygon_utils import *
 from tile_id import *
 
-def map_shapely_polygon_into_tile(tile, shapely_polygon_latlon, manual_offset=(0,0)):
+def map_shapely_polygon_into_tile(tile, shapely_polygon_latlon, manual_offset=(0.,0.)):
     shapely_polygon_utm = poly_latlon_to_utm(shapely_polygon_latlon, offset=manual_offset)
     clipped_poly = tile.polygon().intersection(shapely_polygon_utm)
     if clipped_poly.is_simple:
@@ -41,8 +41,8 @@ def main():
     parser.add_argument("-c", "--city-name", required=True, help="Name of city (sub-directory of output directory that will be created)")
     parser.add_argument("--sw", required=True, help='SW corner formatted as "lat,lon" or "lat, lon"')
     parser.add_argument("--ne", required=True, help='NE corner formatted as "lat,lon" or "lat, lon"')
-    parser.add_argument("--offset-x", required=False, type=int, default=0, help='Offset x coord of each point')
-    parser.add_argument("--offset-y", required=False, type=int, default=0, help='Offset y coord of each point')
+    parser.add_argument("--offset-x", required=False, type=float, default=0., help='Offset x coord of each point')
+    parser.add_argument("--offset-y", required=False, type=float, default=0., help='Offset y coord of each point')
     group = parser.add_mutually_exclusive_group(required=True)
     group.add_argument("--time", action='store_true', help='Optimize for time')
     group.add_argument("--memory", action='store_true', help='Optimize for memory usage')

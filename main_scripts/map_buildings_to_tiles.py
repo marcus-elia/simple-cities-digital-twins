@@ -23,7 +23,8 @@ def filter_properties(pwp):
     filtered = {}
     for key,value in pwp.properties.items():
         if key == "height" and value != None:
-            filtered[key] = value
+            # OSM annotators could have put m or M after the number
+            filtered[key] = value.strip('m').strip('M').strip()
         elif key == "building" and value != None:
             filtered[key] = value
         elif key == "building:material" and value != None:
@@ -41,6 +42,7 @@ def filter_properties(pwp):
         filtered["height"] = 5
     if not "building:color" in filtered:
         if "building:material" in filtered:
+            # If there is a material, choose a color from that
             material = filtered["building:material"]
             if material == "glass":
                 filtered["building:color"] = "blue"
@@ -52,6 +54,9 @@ def filter_properties(pwp):
                 filtered["building:color"] = "white"
             else:
                 filtered["building:color"] = "gray"
+        elif float(filtered["height"]) > 90:
+            # Tall buildings without materials are assumed to be glass skyscrapers
+            filtered["building:color"] = "blue"
         else:
             filtered["building:color"] = "gray"
 

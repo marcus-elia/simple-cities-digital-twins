@@ -130,6 +130,7 @@ def main():
 
             # The header is always this
             f.write("mtllib %s\n" % (MTL_FILENAME))
+            f.write("# Terrain vertices\n")
 
             # Add the terrain. Use the DEM.
             for local_x in range(0, TileID.TILE_SIZE + TERRAIN_MESH_RES, TERRAIN_MESH_RES):

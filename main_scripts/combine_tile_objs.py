@@ -127,9 +127,14 @@ def main():
             uv_offset = uv_num
 
             # Look through the tile's OBJ file and add things to the combined OBJ file.
+            is_building_vertex = False
             for line in lines:
                 if line.startswith("mtllib"):
                     continue
+                elif line.startswith("# Building"):
+                    is_building_vertex = True
+                elif line.startswith("# Terrain"):
+                    is_building_vertex = False
                 elif line.startswith("v "):
                     point_coords = line.split()[1:]
                     x = float(point_coords[0]) + vertex_offset_x
@@ -151,9 +156,10 @@ def main():
                 elif line.startswith("f "):
                     vertices = line.split()[1:]
                     new_line = "f"
-                    # I don't know why reversing the face orientation when combining
+                    # I don't know why reversing the building's face orientation when combining
                     # the OBJs magically makes them correct
-                    vertices.reverse()
+                    if is_building_vertex:
+                        vertices.reverse()
                     for vertex in vertices:
                         new_line += " "
                         # The vertex may or may not contain a UV index

@@ -57,7 +57,7 @@ def geojson_feature_to_shapely(geojson_feature):
     elif geojson_feature.geometry["type"] == "Polygon":
         return [geojson_polygon_to_shapely(geojson_feature.geometry.coordinates)]
     else:
-        return shapely.Polygon()
+        return []
 
 def num_polygons_in_geojson_file(geojson_contents):
     return len(geojson_contents['features'])

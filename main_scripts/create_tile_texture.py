@@ -45,14 +45,20 @@ def main():
     SIDEWALK_FILENAME = "sidewalk_polygons.geojson"
     PARKING_FILENAME = "parking_polygons.geojson"
     WATER_FILENAME = "water_polygons.geojson"
+    BASEBALL_FILENAME = "baseball_polygons.geojson"
+    TRACK_FILENAME = "track_polygons.geojson"
+    POOL_FILENAME = "pool_polygons.geojson"
     SVG_FILENAME = "tile_texture.svg"
     JPG_FILENAME = "tile_texture.jpg"
     city_directory = os.path.join(args.tile_directory, args.city_name)
     ROAD_COLOR = "rgb(80,80,80)"
-    GRASS_COLOR = "rgb(0,150,20)"
+    GRASS_COLOR = "rgb(0,130,20)"
     SIDEWALK_COLOR = "rgb(168,168,168)"
     PARKING_COLOR = "rgb(128, 128,128)"
-    WATER_COLOR = "rgb(0,140,190)"
+    WATER_COLOR = "rgb(0,80,170)"
+    BASEBALL_COLOR = "rgb(236,217,154)"
+    TRACK_COLOR = "rgb(195,26,58)"
+    POOL_COLOR = "rgb(36,238,234)"
     JPG_SIZE = 4096
 
     # Iterate over every tile, creating an SVG manually and using ImageMagick to convert to JPG
@@ -76,12 +82,24 @@ def main():
             # Read the contents of the water geojson file
             shapely_water_polygons = read_geojson_file_to_shapely_list(full_path, WATER_FILENAME)
 
+            # Read the contents of the baseball field geojson file
+            shapely_baseball_polygons = read_geojson_file_to_shapely_list(full_path, BASEBALL_FILENAME)
+
+            # Read the contents of the track geojson file
+            shapely_track_polygons = read_geojson_file_to_shapely_list(full_path, TRACK_FILENAME)
+
+            # Read the contents of the swimming pool geojson file
+            shapely_pool_polygons = read_geojson_file_to_shapely_list(full_path, POOL_FILENAME)
+
             # Write a SVG to the tile
             color_polygons_pairs = [(GRASS_COLOR, [current_tile.polygon()]),\
                     (WATER_COLOR, shapely_water_polygons),\
                     (ROAD_COLOR, shapely_road_polygons),\
                     (PARKING_COLOR, shapely_parking_polygons),\
-                    (SIDEWALK_COLOR, shapely_sidewalk_polygons)]
+                    (SIDEWALK_COLOR, shapely_sidewalk_polygons),\
+                    (TRACK_COLOR, shapely_track_polygons),\
+                    (POOL_COLOR, shapely_pool_polygons),\
+                    (BASEBALL_COLOR, shapely_baseball_polygons)]
             svg_path = os.path.join(full_path, SVG_FILENAME)
             create_tile_svg(current_tile, color_polygons_pairs, svg_path)
 

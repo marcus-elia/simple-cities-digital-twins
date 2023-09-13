@@ -115,9 +115,10 @@ def main():
             f.close()
 
             # Every point needs to be offset by a certain amount
-            # Flip over the x-axis because mesh viewers had it inverted otherwise
-            vertex_offset_x = (max_i - i) * TileID.TILE_SIZE
-            vertex_offset_z = (j - min_j) * TileID.TILE_SIZE
+            # Flip over the y-axis because OBJs have -z up, I think
+            vertex_offset_x = (i - min_i) * TileID.TILE_SIZE
+            vertex_offset_z = (max_j - j) * TileID.TILE_SIZE
+            target_tile = TileID.tile_indices_to_object(i - min_i, max_j - j, tile_min.zone)
 
             # The number of vertices already added to the OBJ is how much to offset
             # each index by here
@@ -140,8 +141,7 @@ def main():
                     u,v = line.split()[1:]
                     u = float(u.strip())
                     v = float(v.strip())
-                    # Do some u/v flipping to make the OBJ oriented correctly in mesh viewers
-                    obj_file.write("vt %.6f %.6f\n" % (1 - v, u))
+                    obj_file.write("vt %.6f %.6f\n" % (u, v))
                     uv_num += 1
                 elif line.startswith("g "):
                     group_name = line[2:]
@@ -151,6 +151,9 @@ def main():
                 elif line.startswith("f "):
                     vertices = line.split()[1:]
                     new_line = "f"
+                    # I don't know why reversing the face orientation when combining
+                    # the OBJs magically makes them correct
+                    vertices.reverse()
                     for vertex in vertices:
                         new_line += " "
                         # The vertex may or may not contain a UV index

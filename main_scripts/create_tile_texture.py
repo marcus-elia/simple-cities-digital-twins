@@ -63,52 +63,18 @@ def main():
             current_tile = TileID.tile_indices_to_object(i, j, tile_min.zone)
             sw_x, sw_y = current_tile.sw_corner()
             full_path = os.path.join(city_directory, "%d_%d_%d" % (i, j, tile_min.zone))
-            
-            # Read the contents of the road geojson file
-            f = open(os.path.join(full_path, ROAD_FILENAME))
-            road_geojson_contents = geojson.loads(f.read())
-            f.close()
 
-            # Convert roads to shapely polygons
-            shapely_road_polygons = []
-            for geojson_multipolygon in road_geojson_contents['features']:
-                shapely_road_polygons += geojson_multipoly_to_shapely(geojson_multipolygon['geometry']['coordinates'])
+            # Read the contents of the road geojson file
+            shapely_road_polygons = read_geojson_file_to_shapely_list(full_path, ROAD_FILENAME)
 
             # Read the contents of the sidewalk geojson file
-            f = open(os.path.join(full_path, SIDEWALK_FILENAME))
-            sidewalk_geojson_contents = geojson.loads(f.read())
-            f.close()
-
-            # Convert sidewalks to shapely polygons
-            shapely_sidewalk_polygons = []
-            for geojson_multipolygon in sidewalk_geojson_contents['features']:
-                shapely_sidewalk_polygons += geojson_multipoly_to_shapely(geojson_multipolygon['geometry']['coordinates'])
+            shapely_sidewalk_polygons = read_geojson_file_to_shapely_list(full_path, SIDEWALK_FILENAME)
 
             # Read the contents of the parking lot geojson file
-            shapely_parking_polygons = []
-            try:
-                f = open(os.path.join(full_path, PARKING_FILENAME))
-                parking_geojson_contents = geojson.loads(f.read())
-                f.close()
-
-                # Convert parking lots to shapely polygons
-                for geojson_multipolygon in parking_geojson_contents['features']:
-                    shapely_parking_polygons += geojson_multipoly_to_shapely(geojson_multipolygon['geometry']['coordinates'])
-            except FileNotFoundError:
-                pass
+            shapely_parking_polygons = read_geojson_file_to_shapely_list(full_path, PARKING_FILENAME)
 
             # Read the contents of the water geojson file
-            shapely_water_polygons = []
-            try:
-                f = open(os.path.join(full_path, WATER_FILENAME))
-                water_geojson_contents = geojson.loads(f.read())
-                f.close()
-
-                # Convert water to shapely polygons
-                for geojson_multipolygon in water_geojson_contents['features']:
-                    shapely_water_polygons += geojson_multipoly_to_shapely(geojson_multipolygon['geometry']['coordinates'])
-            except FileNotFoundError:
-                pass
+            shapely_water_polygons = read_geojson_file_to_shapely_list(full_path, WATER_FILENAME)
 
             # Write a SVG to the tile
             color_polygons_pairs = [(GRASS_COLOR, [current_tile.polygon()]),\

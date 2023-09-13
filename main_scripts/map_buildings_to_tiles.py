@@ -19,6 +19,43 @@ from latlon_to_utm import *
 from polygon_utils import *
 from tile_id import *
 
+def filter_properties(pwp):
+    filtered = {}
+    for key,value in pwp.properties.items():
+        if key == "height" and value != None:
+            filtered[key] = value
+        elif key == "building" and value != None:
+            filtered[key] = value
+        elif key == "building:material" and value != None:
+            filtered[key] = value
+        elif (key == "building:color" or key == "building:colour") and value != None:
+            filtered["building:color"] = value
+        elif key == "roof:shape" and value != None:
+            filtered[key] = value
+        elif (key == "roof:color" or key == "roof:colour") and value != None:
+            filtered["roof:color"] = value
+        elif key == "roof:material" and value != None:
+            filtered[key] = value
+    # Set the required things
+    if not "height" in filtered:
+        filtered["height"] = 5
+    if not "building:color" in filtered:
+        if "building:material" in filtered:
+            material = filtered["building:material"]
+            if material == "glass":
+                filtered["building:color"] = "blue"
+            elif material == "brick":
+                filtered["building:color"] = "red"
+            elif material == "stone" or material == "concrete":
+                filtered["building:color"] = "gray"
+            elif material == "plaster" or material == "marble":
+                filtered["building:color"] = "white"
+            else:
+                filtered["building:color"] = "gray"
+        else:
+            filtered["building:color"] = "gray"
+
+        return filtered
 
 def main():
     parser = argparse.ArgumentParser(description="Map geojson polygons into tiles.")
@@ -65,11 +102,11 @@ def main():
     f.close()
 
     # Start by mapping every tile to an empty polygon
-    tile_to_polygons_map = {}
+    tile_to_pwps_map = {}
     print("Initializing an empty multipolygon for all %d tiles." % (num_tiles))
     for i in range(min_i, max_i + 1):
         for j in range(min_j, max_j + 1):
-            tile_to_polygons_map[(i, j)] = []
+            tile_to_pwps_map[(i, j)] = []
 
     # Collect info for logging
     start_time = time.time()
@@ -77,17 +114,20 @@ def main():
     num_completed = 0
 
     # Now iterate over every polygon in the geojson, intersecting only with relevant tiles
-    for geojson_multipolygon in geojson_contents['features']:
-        shapely_polygons = geojson_multipoly_to_shapely(geojson_multipolygon.geometry.coordinates)
-        for shapely_polygon_lonlat in shapely_polygons:
-            shapely_polygon_utm = poly_lonlat_to_utm(shapely_polygon_lonlat, offset=(args.offset_x, args.offset_y))
+    for geojson_feature in geojson_contents['features']:
+        pwps_lonlat = geojson_feature_to_pwps(geojson_feature)
+        for pwp_lonlat in pwps_lonlat:
+            pwp_utm = PolygonWithProperties(poly_lonlat_to_utm(pwp_lonlat.polygon, offset=(args.offset_x, args.offset_y)), pwp_lonlat.properties)
 
-            center_x, center_y = shapely_polygon_utm.centroid.x, shapely_polygon_utm.centroid.y
+            # Filter out unused properties and set the required ones
+            pwp_utm.properties = filter_properties(pwp_utm)
+
+            center_x, center_y = pwp_utm.polygon.centroid.x, pwp_utm.polygon.centroid.y
             containing_tile = TileID(center_x, center_y, tile_min.zone)
 
             # Add it to the tile's list of polygons
             try:
-                tile_to_polygons_map[(containing_tile.i, containing_tile.j)].append(shapely_polygon_utm)
+                tile_to_pwps_map[(containing_tile.i, containing_tile.j)].append(pwp_utm)
             except KeyError:
                 # If the polygon's center is not in the tile area, ignore it
                 continue
@@ -101,10 +141,10 @@ def main():
     print("Storing files in tiles.")
     for i in range(min_i, max_i + 1):
         for j in range(min_j, max_j + 1):
-            tile_multipolygon = shapely.MultiPolygon(tile_to_polygons_map[(i, j)])
-            # Convert the multipolygon from shapely to geojson
-            geojson_tile_union = shapely_multipolygon_to_geojson(tile_multipolygon)
-            features = [geojson.Feature(geometry=geojson_tile_union)]
+            geojson_features = []
+            for pwp in tile_to_pwps_map[(i, j)]:
+                geojson_feature = polygon_with_properties_to_geojson(pwp)
+                geojson_features.append(geojson_feature)
 
             # Create the tile's directory, in case it doesn't exist yet
             full_path = os.path.join(city_directory, "%d_%d_%d" % (i, j, tile_min.zone))
@@ -112,7 +152,7 @@ def main():
             p.communicate()
 
             # Dump the geojson object into a string
-            dump = geojson.dumps(geojson.FeatureCollection(features=features, crs=geojson_crs))
+            dump = geojson.dumps(geojson.FeatureCollection(features=geojson_features, crs=geojson_crs))
 
             # Finally, write to the file
             full_path = os.path.join(full_path, "buildings.geojson")

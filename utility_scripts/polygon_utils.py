@@ -3,6 +3,11 @@
 import shapely
 import utm
 
+class PolygonWithProperties:
+    def __init__(self, polygon, properties):
+        self.polygon = polygon
+        self.properties = properties
+
 def poly_lonlat_to_utm(poly_lonlat, offset=(0,0)):
     """
     Convert a shapely polygon from lat/lon to UTM. This does both

@@ -99,13 +99,13 @@ def main():
             full_path = os.path.join(city_directory, "%d_%d_%d" % (i, j, tile_min.zone))
 
             # Load the buildings geojson file
-            shapely_building_polygons = []
+            building_pwps = []
             try:
                 f = open(os.path.join(full_path, BUILDINGS_FILENAME))
                 buildings_geojson_contents = geojson.loads(f.read())
                 f.close()
-                for geojson_multipolygon in buildings_geojson_contents['features']:
-                    shapely_building_polygons += geojson_multipoly_to_shapely(geojson_multipolygon['geometry']['coordinates'])
+                for geojson_feature in buildings_geojson_contents['features']:
+                    building_pwps += geojson_feature_to_pwps(geojson_feature)
             except FileNotFoundError:
                 pass
 
@@ -118,9 +118,18 @@ def main():
             f.write("Kd 1.0000 1.0000 1.0000\n")
             f.write("illum 1\n")
             f.write("map_Kd %s\n\n" % TILE_TEXTURE_FILENAME)
-            # Add white for buildings (temporary)
+            # Add colors for buildings
             f.write("newmtl white\n")
             f.write("Kd 1.0000 1.0000 1.0000\n")
+            f.write("illum 0\n\n")
+            f.write("newmtl blue\n")
+            f.write("Kd 0.0000 0.0000 0.8000\n")
+            f.write("illum 0\n\n")
+            f.write("newmtl red\n")
+            f.write("Kd 0.6000 0.0000 0.0000\n")
+            f.write("illum 0\n\n")
+            f.write("newmtl gray\n")
+            f.write("Kd 0.5000 0.5000 0.5000\n")
             f.write("illum 0\n")
             f.close()
 
@@ -165,11 +174,15 @@ def main():
             # Add all of the buildings
             # This variable tracks which index the building's vertices starts with
             starting_vertex_index = (TERRAIN_MESH_ROW_SIZE + 1) * (TERRAIN_MESH_ROW_SIZE + 1) + 1
-            for building in shapely_building_polygons:
+            for pwp in building_pwps:
                 # Determine the elevation/height properties
+                building = pwp.polygon
                 lowest_elevation, highest_elevation = query_building_elevations(building.convex_hull, dem)
-                above_ground_height = 5
+                above_ground_height = float(pwp.properties["height"])
                 height = above_ground_height + highest_elevation - lowest_elevation
+
+                # The color
+                color = pwp.properties["building:color"]
 
                 # Write the vertices of the building
                 # Use a flipped convex hull because OBJs are -z up (I think that's why)
@@ -188,7 +201,7 @@ def main():
 
                 # Write the header of the building
                 f.write("g a building with %d vertices\n" % (len(vertices)))
-                f.write("usemtl white\n")
+                f.write("usemtl %s\n" % (color))
 
                 # Once again, doing the triangulation is tricky
                 # For the sides of the building, each face is a bottom right triangle and a top left triangle

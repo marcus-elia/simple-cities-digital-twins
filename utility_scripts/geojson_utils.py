@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 
 # Utility functions for geojson files.
-# All geojsons must be in the EPSG:4326 (WGS 84) projection
+# Be aware that some files could store (x,y,z) points, even though
+# these functions only use x and y.
 
 import geojson
 import os
@@ -20,18 +21,24 @@ def geojson_polygon_to_shapely(geojson_polygon):
     # Single polygon with no holes
     if type(geojson_polygon[0]) != list:
         outer_boundary = []
-        for x,y in geojson_polygon:
+        for point in geojson_polygon:
+            x = point[0]
+            y = point[1]
             outer_boundary.append((x, y))
         return shapely.Polygon(outer_boundary)
     
     # A polygon that does have holes
     outer_boundary = []
     holes = []
-    for x,y in geojson_polygon[0]:
+    for point in geojson_polygon[0]:
+        x = point[0]
+        y = point[1]
         outer_boundary.append((x, y))
     for geojson_hole in geojson_polygon[1:]:
         hole = []
-        for x,y in geojson_hole:
+        for point in geojson_hole:
+            x = point[0]
+            y = point[1]
             hole.append((x, y))
         holes.append(hole)
 

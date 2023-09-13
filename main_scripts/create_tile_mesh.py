@@ -18,6 +18,12 @@ from svg_utils import *
 from tile_id import *
 from tiff_utils import *
 
+def get_property_or_default(properties, key, default):
+    if key in properties:
+        return properties[key]
+    else:
+        return default
+
 def query_building_elevations(shapely_building_polygon, dem_interpolater):
     """
     Determine the lowest and highest elevations along the perimeter of
@@ -178,11 +184,11 @@ def main():
                 # Determine the elevation/height properties
                 building = pwp.polygon
                 lowest_elevation, highest_elevation = query_building_elevations(building.convex_hull, dem)
-                above_ground_height = float(pwp.properties["height"])
+                above_ground_height = float(get_property_or_default(pwp.properties, "height", 5.))
                 height = above_ground_height + highest_elevation - lowest_elevation
 
                 # The color
-                color = pwp.properties["building:color"]
+                color = get_property_or_default(pwp.properties, "building:color", "gray")
 
                 # Write the vertices of the building
                 # Use a flipped convex hull because OBJs are -z up (I think that's why)

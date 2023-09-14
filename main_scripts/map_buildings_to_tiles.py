@@ -13,6 +13,7 @@ import time
 import utm
 
 sys.path.insert(1, 'C:/Users/mse93/Documents/simple-cities-digital-twins/utility_scripts')
+from configuration import *
 from general_utils import *
 from geojson_utils import *
 from latlon_to_utm import *
@@ -45,20 +46,23 @@ def filter_properties(pwp):
             # If there is a material, choose a color from that
             material = filtered["building:material"]
             if material == "glass":
-                filtered["building:color"] = "blue"
+                filtered["building:color"] = "glass"
             elif material == "brick":
-                filtered["building:color"] = "red"
+                filtered["building:color"] = "brick"
             elif material == "stone" or material == "concrete":
-                filtered["building:color"] = "gray"
+                filtered["building:color"] = "concrete"
             elif material == "plaster" or material == "marble":
-                filtered["building:color"] = "white"
+                filtered["building:color"] = "marble"
             else:
-                filtered["building:color"] = "gray"
+                filtered["building:color"] = "concrete"
         elif float(filtered["height"]) > 90:
             # Tall buildings without materials are assumed to be glass skyscrapers
-            filtered["building:color"] = "blue"
+            filtered["building:color"] = "glass"
+        elif "building" in filtered and filtered["building"] == "school":
+            # Schools are brick
+            filtered["building:color"] = "brick"
         else:
-            filtered["building:color"] = "gray"
+            filtered["building:color"] = "concrete"
 
         return filtered
 
@@ -66,7 +70,7 @@ def main():
     parser = argparse.ArgumentParser(description="Map geojson polygons into tiles.")
     parser.add_argument("-i", "--input-filepath", required=True, help="Path to input geojson file")  
     parser.add_argument("-t", "--tile-directory", required=True, help="Name of tile directory")
-    parser.add_argument("-c", "--city-name", required=True, help="Name of city (sub-directory of output directory that will be created)")
+    parser.add_argument("--city-name", required=True, help="Name of city (sub-directory of output directory that will be created)")
     parser.add_argument("--sw", required=True, help='SW corner formatted as "lat,lon" or "lat, lon"')
     parser.add_argument("--ne", required=True, help='NE corner formatted as "lat,lon" or "lat, lon"')
     parser.add_argument("--offset-x", required=False, type=float, default=0., help='Offset x coord of each point')
@@ -160,11 +164,11 @@ def main():
             dump = geojson.dumps(geojson.FeatureCollection(features=geojson_features, crs=geojson_crs))
 
             # Finally, write to the file
-            full_path = os.path.join(full_path, "buildings.geojson")
+            full_path = os.path.join(full_path, BUILDINGS_FILENAME)
             f = open(full_path, 'w')
             f.write(dump)
             f.close()
-    print("Stored %d %s files in %s." % (num_tiles, "buildings.geojson", full_path))
+    print("Stored %d %s files in %s." % (num_tiles, BUILDINGS_FILENAME, full_path))
 
 if __name__ == "__main__":
     main()

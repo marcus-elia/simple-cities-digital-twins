@@ -11,6 +11,7 @@ import sys
 import time
 
 sys.path.insert(1, 'C:/Users/mse93/Documents/simple-cities-digital-twins/utility_scripts')
+from configuration import *
 from general_utils import *
 from geojson_utils import *
 from latlon_to_utm import *
@@ -61,13 +62,16 @@ def get_convex_hull_reflected_across_tile_y(polygon, tile):
 
 def main():
     parser = argparse.ArgumentParser(description="Create tile mesh OBJ files.")
+    parser.add_argument("--config-file", required=True, help="Path to the configuration file")
     parser.add_argument("-t", "--tile-directory", required=True, help="Name of tile directory")
-    parser.add_argument("-c", "--city-name", required=True, help="Name of city (sub-directory of output directory)")
+    parser.add_argument("--city-name", required=True, help="Name of city (sub-directory of output directory)")
     parser.add_argument("--dem-path", required=True, help="Path to GeoTIFF DEM file")
     parser.add_argument("--sw", required=True, help='SW corner formatted as "lat,lon" or "lat, lon"')
     parser.add_argument("--ne", required=True, help='NE corner formatted as "lat,lon" or "lat, lon"')
 
     args = parser.parse_args()
+
+    config = Configuration(args.config_file)
 
     # Get the min/max tile IDs from the lat/lon
     lat1, lon1 = parse_latlon_string(args.sw)
@@ -84,12 +88,8 @@ def main():
     num_tiles = (max_i - min_i + 1) * (max_j - min_j + 1)
     print("You have specified %d tile%s." % (num_tiles,  "s" if num_tiles > 1 else ""))
 
-    TILE_TEXTURE_FILENAME = "tile_texture.jpg"
-    BUILDINGS_FILENAME = "buildings.geojson"
     city_directory = os.path.join(args.tile_directory, args.city_name)
-    MTL_FILENAME = "tile.mtl"
-    OBJ_FILENAME = "tile.obj"
-    TERRAIN_MESH_RES = 25
+    TERRAIN_MESH_RES = config.at["TERRAIN_MESH_RES"]
     TERRAIN_MESH_ROW_SIZE = int(TileID.TILE_SIZE / TERRAIN_MESH_RES)
 
     # Load the DEM
@@ -116,7 +116,7 @@ def main():
                 pass
 
             # Create the MTL file (the easy part)
-            mtl_path = os.path.join(full_path, MTL_FILENAME)
+            mtl_path = os.path.join(full_path, TILE_MTL_FILENAME)
             material_name = "%d_%d_%d" % (i, j, tile_min.zone)
             f = open(mtl_path, 'w')
             f.write("newmtl %s\n" % (material_name))
@@ -125,26 +125,21 @@ def main():
             f.write("illum 1\n")
             f.write("map_Kd %s\n\n" % TILE_TEXTURE_FILENAME)
             # Add colors for buildings
-            f.write("newmtl white\n")
-            f.write("Kd 1.0000 1.0000 1.0000\n")
-            f.write("illum 0\n\n")
-            f.write("newmtl blue\n")
-            f.write("Kd 0.0000 0.0000 0.8000\n")
-            f.write("illum 0\n\n")
-            f.write("newmtl red\n")
-            f.write("Kd 0.6000 0.0000 0.0000\n")
-            f.write("illum 0\n\n")
-            f.write("newmtl gray\n")
-            f.write("Kd 0.5000 0.5000 0.5000\n")
-            f.write("illum 0\n")
+            # Get them from the config file
+            material_color_map = {building_mat_name : config.at[BUILDING_MATERIAL_NAMES[building_mat_name]] for building_mat_name in BUILDING_MATERIAL_NAMES}
+            for building_mat_name in material_color_map:
+                f.write("newmtl %s\n" % building_mat_name)
+                r,g,b = material_color_map[building_mat_name].split(',')
+                f.write("Kd %s %s %s\n" % (r, g, b))
+                f.write("illum 0\n\n")
             f.close()
 
             # Start the OBJ file
-            obj_path = os.path.join(full_path, OBJ_FILENAME)
+            obj_path = os.path.join(full_path, TILE_OBJ_FILENAME)
             f = open(obj_path, 'w')
 
             # The header is always this
-            f.write("mtllib %s\n" % (MTL_FILENAME))
+            f.write("mtllib %s\n" % (TILE_MTL_FILENAME))
             f.write("# Terrain vertices\n")
 
             # Add the terrain. Use the DEM.
@@ -188,7 +183,7 @@ def main():
                 height = above_ground_height + highest_elevation - lowest_elevation
 
                 # The color
-                color = get_property_or_default(pwp.properties, "building:color", "gray")
+                color = get_property_or_default(pwp.properties, "building:color", "concrete")
 
                 # Write the vertices of the building
                 # Use a flipped convex hull because OBJs are -z up (I think that's why)

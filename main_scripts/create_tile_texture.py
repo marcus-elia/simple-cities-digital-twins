@@ -11,6 +11,7 @@ import sys
 import time
 
 sys.path.insert(1, 'C:/Users/mse93/Documents/simple-cities-digital-twins/utility_scripts')
+from configuration import *
 from general_utils import *
 from geojson_utils import *
 from latlon_to_utm import *
@@ -19,12 +20,15 @@ from tile_id import *
 
 def main():
     parser = argparse.ArgumentParser(description="Create tile texture SVGs and JPGs for tiles.")
+    parser.add_argument("--config-file", required=True, help="Path to the configuration file")
     parser.add_argument("-t", "--tile-directory", required=True, help="Name of tile directory")
-    parser.add_argument("-c", "--city-name", required=True, help="Name of city (sub-directory of output directory that will be created)")
+    parser.add_argument("--city-name", required=True, help="Name of city (sub-directory of output directory that will be created)")
     parser.add_argument("--sw", required=True, help='SW corner formatted as "lat,lon" or "lat, lon"')
     parser.add_argument("--ne", required=True, help='NE corner formatted as "lat,lon" or "lat, lon"')
 
     args = parser.parse_args()
+
+    config = Configuration(args.config_file)
 
     # Get the min/max tile IDs from the lat/lon
     lat1, lon1 = parse_latlon_string(args.sw)
@@ -41,25 +45,7 @@ def main():
     num_tiles = (max_i - min_i + 1) * (max_j - min_j + 1)
     print("You have specified %d tile%s." % (num_tiles,  "s" if num_tiles > 1 else ""))
 
-    ROAD_FILENAME = "road_polygons.geojson"
-    SIDEWALK_FILENAME = "sidewalk_polygons.geojson"
-    PARKING_FILENAME = "parking_polygons.geojson"
-    WATER_FILENAME = "water_polygons.geojson"
-    BASEBALL_FILENAME = "baseball_polygons.geojson"
-    TRACK_FILENAME = "track_polygons.geojson"
-    POOL_FILENAME = "pool_polygons.geojson"
-    SVG_FILENAME = "tile_texture.svg"
-    JPG_FILENAME = "tile_texture.jpg"
     city_directory = os.path.join(args.tile_directory, args.city_name)
-    ROAD_COLOR = "rgb(80,80,80)"
-    GRASS_COLOR = "rgb(0,130,20)"
-    SIDEWALK_COLOR = "rgb(168,168,168)"
-    PARKING_COLOR = "rgb(128, 128,128)"
-    WATER_COLOR = "rgb(0,80,170)"
-    BASEBALL_COLOR = "rgb(236,217,154)"
-    TRACK_COLOR = "rgb(195,26,58)"
-    POOL_COLOR = "rgb(36,238,234)"
-    JPG_SIZE = 4096
 
     # Iterate over every tile, creating an SVG manually and using ImageMagick to convert to JPG
     start_time = time.time()
@@ -92,27 +78,26 @@ def main():
             shapely_pool_polygons = read_geojson_file_to_shapely_list(full_path, POOL_FILENAME)
 
             # Write a SVG to the tile
-            color_polygons_pairs = [(GRASS_COLOR, [current_tile.polygon()]),\
-                    (WATER_COLOR, shapely_water_polygons),\
-                    (ROAD_COLOR, shapely_road_polygons),\
-                    (PARKING_COLOR, shapely_parking_polygons),\
-                    (SIDEWALK_COLOR, shapely_sidewalk_polygons),\
-                    (TRACK_COLOR, shapely_track_polygons),\
-                    (POOL_COLOR, shapely_pool_polygons),\
-                    (BASEBALL_COLOR, shapely_baseball_polygons)]
+            color_polygons_pairs = [(config.at["GRASS_COLOR"], [current_tile.polygon()]),\
+                    (config.at["WATER_COLOR"], shapely_water_polygons),\
+                    (config.at["ROAD_COLOR"], shapely_road_polygons),\
+                    (config.at["PARKING_COLOR"], shapely_parking_polygons),\
+                    (config.at["SIDEWALK_COLOR"], shapely_sidewalk_polygons),\
+                    (config.at["TRACK_COLOR"], shapely_track_polygons),\
+                    (config.at["POOL_COLOR"], shapely_pool_polygons),\
+                    (config.at["BASEBALL_COLOR"], shapely_baseball_polygons)]
             svg_path = os.path.join(full_path, SVG_FILENAME)
             create_tile_svg(current_tile, color_polygons_pairs, svg_path)
 
             # Convert the SVG to JPG using ImageMagick
             PATH_TO_IMAGE_MAGICK = "C:/Program Files/ImageMagick-7.1.1-Q16-HDRI/magick.exe"
             jpg_path = os.path.join(full_path, JPG_FILENAME)
-            subprocess.run([PATH_TO_IMAGE_MAGICK, "convert", "-size", "%dx%d" % (JPG_SIZE, JPG_SIZE), svg_path, jpg_path])
+            subprocess.run([PATH_TO_IMAGE_MAGICK, "convert", "-size", "%dx%d" % (config.at["JPG_SIZE"], config.at["JPG_SIZE"]), svg_path, jpg_path])
 
             # Log the status
             time_elapsed = time.time() - start_time
             num_complete += 1
             print(get_time_estimate_string(time_elapsed, num_complete, num_tiles))
-
 
 if __name__ == "__main__":
     main()

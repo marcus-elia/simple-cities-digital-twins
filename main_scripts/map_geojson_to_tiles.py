@@ -13,6 +13,7 @@ import time
 import utm
 
 sys.path.insert(1, 'C:/Users/mse93/Documents/simple-cities-digital-twins/utility_scripts')
+from configuration import *
 from general_utils import *
 from geojson_utils import *
 from latlon_to_utm import *
@@ -36,16 +37,26 @@ def get_overlapping_tiles(shapely_polygon_utm, zone):
 def main():
     parser = argparse.ArgumentParser(description="Map geojson polygons into tiles.")
     parser.add_argument("-i", "--input-filepath", required=True, help="Path to input geojson file")  
-    parser.add_argument("-o", "--output-filename", required=True, help="Name of output file to write in tiles")
     parser.add_argument("-t", "--tile-directory", required=True, help="Name of tile directory")
-    parser.add_argument("-c", "--city-name", required=True, help="Name of city (sub-directory of output directory that will be created)")
+    parser.add_argument("--city-name", required=True, help="Name of city (sub-directory of output directory that will be created)")
     parser.add_argument("--sw", required=True, help='SW corner formatted as "lat,lon" or "lat, lon"')
     parser.add_argument("--ne", required=True, help='NE corner formatted as "lat,lon" or "lat, lon"')
     parser.add_argument("--offset-x", required=False, type=float, default=0., help='Offset x coord of each point')
     parser.add_argument("--offset-y", required=False, type=float, default=0., help='Offset y coord of each point')
-    group = parser.add_mutually_exclusive_group(required=True)
-    group.add_argument("--time", action='store_true', help='Optimize for time')
-    group.add_argument("--memory", action='store_true', help='Optimize for memory usage')
+    optimization_group = parser.add_mutually_exclusive_group(required=True)
+    optimization_group.add_argument("--time", action='store_true', help='Optimize for time')
+    optimization_group.add_argument("--memory", action='store_true', help='Optimize for memory usage')
+    polygon_category_group = parser.add_mutually_exclusive_group(required=True)
+    polygon_category_group.add_argument("--road", action='store_true', help='The geojson polygons are roads')
+    polygon_category_group.add_argument("--sidewalk", action='store_true', help='The geojson polygons are sidewalks')
+    polygon_category_group.add_argument("--parking", action='store_true', help='The geojson polygons are parking lots')
+    polygon_category_group.add_argument("--water", action='store_true', help='The geojson polygons are water')
+    polygon_category_group.add_argument("--beach", action='store_true', help='The geojson polygons are beaches')
+    polygon_category_group.add_argument("--downtown", action='store_true', help='The geojson polygons are where downtown is')
+    polygon_category_group.add_argument("--park", action='store_true', help='The geojson polygons are parks')
+    polygon_category_group.add_argument("--baseball", action='store_true', help='The geojson polygons are baseball fields')
+    polygon_category_group.add_argument("--track", action='store_true', help='The geojson polygons are tracks')
+    polygon_category_group.add_argument("--pool", action='store_true', help='The geojson polygons are swimming pools')
 
     args = parser.parse_args()
 
@@ -63,6 +74,29 @@ def main():
     max_j = tile_max.j
     num_tiles = (max_i - min_i + 1) * (max_j - min_j + 1)
     print("You have specified %d tile%s." % (num_tiles,  "s" if num_tiles > 1 else ""))
+
+    # Set things based on the category of polygons specified
+    # TODO somehow this should be done automatically
+    if args.road:
+        output_filename = ROAD_FILENAME
+    elif args.sidewalk:
+        output_filename = SIDEWALK_FILENAME
+    elif args.parking:
+        output_filename = PARKING_FILENAME
+    elif args.water:
+        output_filename = WATER_FILENAME
+    elif args.beach:
+        output_filename = BEACH_FILENAME
+    elif args.downtown:
+        output_filename = DOWNTOWN_FILENAME
+    elif args.park:
+        output_filename = PARK_FILENAME
+    elif args.baseball:
+        output_filename = BASEBALL_FILENAME
+    elif args.track:
+        output_filename = TRACK_FILENAME
+    elif args.pool:
+        output_filename = POOL_FILENAME
 
     # Set the variables that will be used in every tile
     geojson_crs = { "type": "name", "properties": { "name": "urn:ogc:def:crs:EPSG::322%d" % (tile_min.zone)}}
@@ -205,11 +239,11 @@ def main():
                 dump = geojson.dumps(geojson.FeatureCollection(features=features, crs=geojson_crs))
 
                 # Finally, write to the file
-                full_path = os.path.join(full_path, args.output_filename)
+                full_path = os.path.join(full_path, output_filename)
                 f = open(full_path, 'w')
                 f.write(dump)
                 f.close()
-        print("Stored %d %s files in %s." % (num_tiles, args.output_filename, full_path))
+        print("Stored %d %s files in %s." % (num_tiles, output_filename, args.tile_directory))
 
 if __name__ == "__main__":
     main()

@@ -11,6 +11,7 @@ import sys
 import time
 
 sys.path.insert(1, 'C:/Users/mse93/Documents/simple-cities-digital-twins/utility_scripts')
+from configuration import *
 from general_utils import *
 from geojson_utils import *
 from latlon_to_utm import *
@@ -20,7 +21,7 @@ from tile_id import *
 def main():
     parser = argparse.ArgumentParser(description="Combine OBJ files from tiles.")
     parser.add_argument("-t", "--tile-directory", required=True, help="Name of tile directory")
-    parser.add_argument("-c", "--city-name", required=True, help="Name of city (sub-directory of tile directory)")
+    parser.add_argument("--city-name", required=True, help="Name of city (sub-directory of tile directory)")
     parser.add_argument("--sw", required=True, help='SW corner formatted as "lat,lon" or "lat, lon"')
     parser.add_argument("--ne", required=True, help='NE corner formatted as "lat,lon" or "lat, lon"')
     parser.add_argument("--output-dir", required=True, help='Directory to write output OBJ, MTL, and JPGs')
@@ -46,9 +47,9 @@ def main():
     city_directory = os.path.join(args.tile_directory, args.city_name)
     output_mtl_filepath = os.path.join(args.output_dir, args.output_filename + ".mtl")
     output_obj_filepath = os.path.join(args.output_dir, args.output_filename + ".obj")
-    TILE_TEXTURE_FILENAME = "tile_texture.jpg"
-    TILE_MTL_FILENAME = "tile.mtl"
-    TILE_OBJ_FILENAME = "tile.obj"
+    #TILE_TEXTURE_FILENAME = "tile_texture.jpg"
+    #TILE_MTL_FILENAME = "tile.mtl"
+    #TILE_OBJ_FILENAME = "tile.obj"
 
     # Create the output directory
     p = subprocess.run(['mkdir', args.output_dir], shell=True)

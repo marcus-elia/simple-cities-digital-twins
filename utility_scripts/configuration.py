@@ -117,7 +117,7 @@ class Configuration:
                 elif expected_type == int:
                     self.at[key] = int(value)
                 elif expected_type == bool:
-                    self.at[key] = bool(value)
+                    self.at[key] = True if value == "True" else False
                 else:
                     print("What is the expected type?")
             else:

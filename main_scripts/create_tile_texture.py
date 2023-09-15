@@ -68,6 +68,15 @@ def main():
             # Read the contents of the water geojson file
             shapely_water_polygons = read_geojson_file_to_shapely_list(full_path, WATER_FILENAME)
 
+            # Read the contents of the downtown geojson file
+            shapely_downtown_polygons = read_geojson_file_to_shapely_list(full_path, DOWNTOWN_FILENAME)
+
+            # Read the contents of the park geojson file
+            shapely_park_polygons = read_geojson_file_to_shapely_list(full_path, PARK_FILENAME)
+
+            # Read the contents of the beach geojson file
+            shapely_beach_polygons = read_geojson_file_to_shapely_list(full_path, BEACH_FILENAME)
+
             # Read the contents of the baseball field geojson file
             shapely_baseball_polygons = read_geojson_file_to_shapely_list(full_path, BASEBALL_FILENAME)
 
@@ -79,6 +88,9 @@ def main():
 
             # Write a SVG to the tile
             color_polygons_pairs = [(config.at["GRASS_COLOR"], [current_tile.polygon()]),\
+                    (config.at["DOWNTOWN_COLOR"], shapely_downtown_polygons),\
+                    (config.at["GRASS_COLOR"], shapely_park_polygons),\
+                    (config.at["BEACH_COLOR"], shapely_beach_polygons),\
                     (config.at["WATER_COLOR"], shapely_water_polygons),\
                     (config.at["ROAD_COLOR"], shapely_road_polygons),\
                     (config.at["PARKING_COLOR"], shapely_parking_polygons),\

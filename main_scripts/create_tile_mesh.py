@@ -183,7 +183,7 @@ def main():
                 height = above_ground_height + highest_elevation - lowest_elevation
 
                 # The color
-                color = get_property_or_default(pwp.properties, "building:color", "concrete")
+                color = get_property_or_default(pwp.properties, "mesh_color", "concrete")
 
                 # Write the vertices of the building
                 # Use a flipped convex hull because OBJs are -z up (I think that's why)

@@ -14,18 +14,29 @@ TRACK_FILENAME = "track_polygons.geojson"
 POOL_FILENAME = "pool_polygons.geojson"
 PARK_FILENAME = "parks_polygons.geojson"
 DOWNTOWN_FILENAME = "downtown_polygons.geojson"
+RESIDENTIAL_FILENAME = "residential_polygons.geojson"
 SVG_FILENAME = "tile_texture.svg"
 JPG_FILENAME = "tile_texture.jpg"
 TILE_MTL_FILENAME = "tile.mtl"
 TILE_OBJ_FILENAME = "tile.obj"
 TILE_TEXTURE_FILENAME = "tile_texture.jpg"
 BUILDINGS_FILENAME = "buildings.geojson"
+
+# This maps the name of the material we write in the MTL files to
+# the material's name in the config file
 BUILDING_MATERIAL_NAMES = {"glass" : "GLASS_COLOR",\
         "brick" : "BRICK_COLOR",\
         "concrete" : "CONCRETE_COLOR",\
         "marble" : "MARBLE_COLOR",\
         "plaster" : "PLASTER_COLOR",\
-        "roof_brown" : "ROOF_BROWN_COLOR",\
+        "metal" : "METAL_COLOR",\
+        "vinyl_tan" : "VINYL_TAN_COLOR",\
+        "vinyl_white" : "VINYL_WHITE_COLOR",\
+        "vinyl_gray" : "VINYL_GRAY_COLOR",\
+        "vinyl_brown" : "VINYL_BROWN_COLOR",\
+        "vinyl_yellow" : "VINYL_YELLOW_COLOR",\
+        "vinyl_blue" : "VINYL_BLUE_COLOR",\
+        "vinyl_green" : "VINYL_GREEN_COLOR",\
         "roof_black" : "ROOF_BLACK_COLOR",\
         "roof_gray" : "ROOF_GRAY_COLOR",\
         "roof_white" : "ROOF_WHITE_COLOR"}
@@ -37,6 +48,7 @@ KEY_TO_TYPE = {\
         "ROAD_COLOR" : str,\
         "SIDEWALK_COLOR" : str,\
         "PARKING_COLOR" : str,\
+        "DOWNTOWN_COLOR" : str,\
         "BASEBALL_COLOR" : str,\
         "TRACK_COLOR" : str,\
         "POOL_COLOR" : str,\
@@ -47,10 +59,34 @@ KEY_TO_TYPE = {\
         "CONCRETE_COLOR" : str,\
         "MARBLE_COLOR" : str,\
         "PLASTER_COLOR" : str,\
+        "METAL_COLOR" : str,\
+        "VINYL_TAN_COLOR" : str,\
+        "VINYL_WHITE_COLOR" : str,\
+        "VINYL_GRAY_COLOR" : str,\
+        "VINYL_BROWN_COLOR" : str,\
+        "VINYL_YELLOW_COLOR" : str,\
+        "VINYL_BLUE_COLOR" : str,\
+        "VINYL_GREEN_COLOR" : str,\
         "ROOF_BROWN_COLOR" : str,\
         "ROOF_BLACK_COLOR" : str,\
         "ROOF_GRAY_COLOR" : str,\
         "ROOF_WHITE_COLOR" : str,\
+        # Material probabilities
+        "SKYSCRAPER_GLASS_PROB" : float,\
+        "SKYSCRAPER_CONCRETE_PROB" : float,\
+        "SKYSCRAPER_METAL_PROB" : float,\
+        "HOUSE_VINYL_PROB" : float,\
+        "HOUSE_BRICK_PROB" : float,\
+        "APARTMENTS_BRICK_PROB" : float,\
+        "APARTMENTS_CONCRETE_PROB" : float,\
+        "APARTMENTS_METAL_PROB" : float,\
+        "VINYL_TAN_PROB" : float,\
+        "VINYL_WHITE_PROB" : float,\
+        "VINYL_GRAY_PROB" : float,\
+        "VINYL_BROWN_PROB" : float,\
+        "VINYL_YELLOW_PROB" : float,\
+        "VINYL_BLUE_PROB" : float,\
+        "VINYL_GREEN_PROB" : float,\
         # Height things
         "MIN_SKYSCRAPER_HEIGHT" : float,\
         "MIN_DOWNTOWN_HEIGHT" : float,\

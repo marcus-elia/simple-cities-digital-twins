@@ -55,6 +55,12 @@ def poly_lonlat_to_utm(poly_lonlat, offset=(0,0)):
 
     return shapely.Polygon(outer_boundary_utm, holes_utm)
 
+def polygon_list_contains(polygon_list, point):
+    for polygon in polygon_list:
+        if polygon.contains(point):
+            return True
+    return False
+
 def main():
     print("Main function not implemented")
 

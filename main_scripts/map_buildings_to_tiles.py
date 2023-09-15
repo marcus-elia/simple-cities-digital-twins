@@ -18,56 +18,12 @@ from general_utils import *
 from geojson_utils import *
 from latlon_to_utm import *
 from polygon_utils import *
+from property_filter import *
 from tile_id import *
-
-def filter_properties(pwp):
-    filtered = {}
-    for key,value in pwp.properties.items():
-        if key == "height" and value != None:
-            # OSM annotators could have put m or M after the number
-            filtered[key] = value.strip('m').strip('M').strip()
-        elif key == "building" and value != None:
-            filtered[key] = value
-        elif key == "building:material" and value != None:
-            filtered[key] = value
-        elif (key == "building:color" or key == "building:colour") and value != None:
-            filtered["building:color"] = value
-        elif key == "roof:shape" and value != None:
-            filtered[key] = value
-        elif (key == "roof:color" or key == "roof:colour") and value != None:
-            filtered["roof:color"] = value
-        elif key == "roof:material" and value != None:
-            filtered[key] = value
-    # Set the required things
-    if not "height" in filtered:
-        filtered["height"] = 5
-    if not "building:color" in filtered:
-        if "building:material" in filtered:
-            # If there is a material, choose a color from that
-            material = filtered["building:material"]
-            if material == "glass":
-                filtered["building:color"] = "glass"
-            elif material == "brick":
-                filtered["building:color"] = "brick"
-            elif material == "stone" or material == "concrete":
-                filtered["building:color"] = "concrete"
-            elif material == "plaster" or material == "marble":
-                filtered["building:color"] = "marble"
-            else:
-                filtered["building:color"] = "concrete"
-        elif float(filtered["height"]) > 90:
-            # Tall buildings without materials are assumed to be glass skyscrapers
-            filtered["building:color"] = "glass"
-        elif "building" in filtered and filtered["building"] == "school":
-            # Schools are brick
-            filtered["building:color"] = "brick"
-        else:
-            filtered["building:color"] = "concrete"
-
-        return filtered
 
 def main():
     parser = argparse.ArgumentParser(description="Map geojson polygons into tiles.")
+    parser.add_argument("--config-file", required=True, help="Path to the configuration file")
     parser.add_argument("-i", "--input-filepath", required=True, help="Path to input geojson file")  
     parser.add_argument("-t", "--tile-directory", required=True, help="Name of tile directory")
     parser.add_argument("--city-name", required=True, help="Name of city (sub-directory of output directory that will be created)")
@@ -77,6 +33,8 @@ def main():
     parser.add_argument("--offset-y", required=False, type=float, default=0., help='Offset y coord of each point')
 
     args = parser.parse_args()
+
+    config = Configuration(args.config_file)
 
     # Get the min/max tile IDs from the lat/lon
     lat1, lon1 = parse_latlon_string(args.sw)
@@ -111,28 +69,42 @@ def main():
     f.close()
 
     # Start by mapping every tile to an empty polygon
+    # and reading in downtown, park, and residential polygons
     tile_to_pwps_map = {}
+    tile_to_downtown_multipolygon_map = {}
+    tile_to_park_multipolygon_map = {}
+    tile_to_residential_multipolygon_map = {}
     print("Initializing an empty multipolygon for all %d tiles." % (num_tiles))
     for i in range(min_i, max_i + 1):
         for j in range(min_j, max_j + 1):
+            full_path = os.path.join(city_directory, "%d_%d_%d" % (i, j, tile_min.zone))
+            tile_to_downtown_multipolygon_map[(i, j)] = read_geojson_file_to_shapely_list(full_path, DOWNTOWN_FILENAME)
+            tile_to_park_multipolygon_map[(i, j)] = read_geojson_file_to_shapely_list(full_path, PARK_FILENAME)
+            tile_to_residential_multipolygon_map[(i, j)] = read_geojson_file_to_shapely_list(full_path, RESIDENTIAL_FILENAME)
             tile_to_pwps_map[(i, j)] = []
+
+    property_filter = PropertyFilter(config)
 
     # Collect info for logging
     start_time = time.time()
     num_polygons = num_polygons_in_geojson_file(geojson_contents)
     num_completed = 0
 
-    # Now iterate over every polygon in the geojson, intersecting only with relevant tiles
+    # Now iterate over every polygon in the geojson, putting the building into the tile it belongs in
     for geojson_feature in geojson_contents['features']:
         pwps_lonlat = geojson_feature_to_pwps(geojson_feature)
         for pwp_lonlat in pwps_lonlat:
             pwp_utm = PolygonWithProperties(poly_lonlat_to_utm(pwp_lonlat.polygon, offset=(args.offset_x, args.offset_y)), pwp_lonlat.properties)
 
-            # Filter out unused properties and set the required ones
-            pwp_utm.properties = filter_properties(pwp_utm)
-
+            # Figure out which tile its center is in
             center_x, center_y = pwp_utm.polygon.centroid.x, pwp_utm.polygon.centroid.y
             containing_tile = TileID(center_x, center_y, tile_min.zone)
+
+            # Filter out unused properties and set the required ones
+            downtown = tile_to_downtown_multipolygon_map[(containing_tile.i, containing_tile.j)]
+            park = tile_to_park_multipolygon_map[(containing_tile.i, containing_tile.j)]
+            residential = tile_to_residential_multipolygon_map[(containing_tile.i, containing_tile.j)]
+            pwp_utm.properties = property_filter.filter(pwp_utm, downtown, park, residential)
 
             # Add it to the tile's list of polygons
             try:

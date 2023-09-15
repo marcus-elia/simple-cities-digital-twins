@@ -184,7 +184,10 @@ class PropertyFilter:
             filtered["height"] = guessed_height
 
         # Choose a mesh:color.
-        if float(filtered["height"]) > self.config.at["MIN_SKYSCRAPER_HEIGHT"] or building_classification == BuildingClassification.Skyscraper:
+        osm_acceptable_materials = ("glass", "brick", "concrete", "marble", "plaster", "metal")
+        if "building:material" in filtered and filtered["building:material"] in osm_acceptable_materials:
+            mesh_color = filtered["building:material"]
+        elif float(filtered["height"]) > self.config.at["MIN_SKYSCRAPER_HEIGHT"] or building_classification == BuildingClassification.Skyscraper:
             mesh_color = self.random_skyscraper_material()
         elif building_classification == BuildingClassification.House:
             mesh_color = self.random_house_material()

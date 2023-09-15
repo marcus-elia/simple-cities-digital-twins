@@ -42,6 +42,9 @@ BUILDING_MATERIAL_NAMES = {"glass" : "GLASS_COLOR",\
         "roof_white" : "ROOF_WHITE_COLOR"}
 
 KEY_TO_TYPE = {\
+        # Booleans
+        "SINGLE_COLOR_BUILDINGS" : bool,\
+        "BUILDING_MESH_COLOR" : str,\
         # SVG colors
         "GRASS_COLOR" : str,\
         "WATER_COLOR" : str,\
@@ -113,6 +116,8 @@ class Configuration:
                     self.at[key] = float(value)
                 elif expected_type == int:
                     self.at[key] = int(value)
+                elif expected_type == bool:
+                    self.at[key] = bool(value)
                 else:
                     print("What is the expected type?")
             else:

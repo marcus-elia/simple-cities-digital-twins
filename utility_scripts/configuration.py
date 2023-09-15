@@ -45,6 +45,8 @@ KEY_TO_TYPE = {\
         # Booleans
         "SINGLE_COLOR_BUILDINGS" : bool,\
         "BUILDING_MESH_COLOR" : str,\
+        "SINGLE_COLOR_ROOFS" : bool,\
+        "ROOF_MESH_COLOR" : str,\
         # SVG colors
         "GRASS_COLOR" : str,\
         "WATER_COLOR" : str,\
@@ -70,7 +72,6 @@ KEY_TO_TYPE = {\
         "VINYL_YELLOW_COLOR" : str,\
         "VINYL_BLUE_COLOR" : str,\
         "VINYL_GREEN_COLOR" : str,\
-        "ROOF_BROWN_COLOR" : str,\
         "ROOF_BLACK_COLOR" : str,\
         "ROOF_GRAY_COLOR" : str,\
         "ROOF_WHITE_COLOR" : str,\
@@ -90,6 +91,9 @@ KEY_TO_TYPE = {\
         "VINYL_YELLOW_PROB" : float,\
         "VINYL_BLUE_PROB" : float,\
         "VINYL_GREEN_PROB" : float,\
+        "ROOF_BLACK_PROB" : float,\
+        "ROOF_GRAY_PROB" : float,\
+        "ROOF_WHITE_PROB" : float,\
         # Height things
         "MIN_SKYSCRAPER_HEIGHT" : float,\
         "MIN_DOWNTOWN_HEIGHT" : float,\

@@ -187,6 +187,10 @@ def main():
                     color = config.at["BUILDING_MESH_COLOR"]
                 else:
                     color = get_property_or_default(pwp.properties, "mesh_color", "concrete")
+                if config.at["SINGLE_COLOR_ROOFS"]:
+                    roof_color = config.at["ROOF_MESH_COLOR"]
+                else:
+                    roof_color = get_property_or_default(pwp.properties, "roof_color", "roof_white")
 
                 # Write the vertices of the building
                 # Use a flipped convex hull because OBJs are -z up (I think that's why)
@@ -220,10 +224,6 @@ def main():
                     p2 = p3
                     p3 = p1 + 1
                     f.write("f %d %d %d\n" % (p1, p2, p3))
-                    # Top base triangle
-                    p1 = p3
-                    p3 = starting_vertex_index
-                    f.write("f %d %d %d\n" % (p1, p2, p3))
 
                 # Connect to the end to the beginning
                 # Bottom right triangle
@@ -235,8 +235,20 @@ def main():
                 p2 = p3
                 p3 = p1 + 1
                 f.write("f %d %d %d\n" % (p1, p2, p3))
-                # Top base triangle
-                p1 = p3
+
+                # Write the header of the roof
+                f.write("g roof of building\n")
+                f.write("usemtl %s\n" % (roof_color))
+                # Triangulate the top base of the building. Each vertex connects to the center.
+                for face_index in range(len(vertices) - 1):
+                    p1 = 1 + starting_vertex_index + (2 * face_index) + 1
+                    p2 = p1 + 2
+                    p3 = starting_vertex_index
+                    f.write("f %d %d %d\n" % (p1, p2, p3))
+                # Finish the last triangle at the end
+                p1 = starting_vertex_index + 2
+                p1 = 1 + starting_vertex_index + 2 * (len(vertices) - 1) + 1
+                p2 = starting_vertex_index + 2
                 p3 = starting_vertex_index
                 f.write("f %d %d %d\n" % (p1, p2, p3))
 

@@ -65,6 +65,14 @@ class PropertyFilter:
         self.vinyl_color_probs = (("tan", tan_cutoff), ("white", white_cutoff), ("gray", gray_cutoff),\
                 ("brown", brown_cutoff), ("yellow", yellow_cutoff), ("blue", blue_cutoff), ("green", green_cutoff))
 
+        # Set the probabilities for materials of houses
+        black_cutoff = self.config.at["ROOF_BLACK_PROB"]
+        gray_cutoff = black_cutoff + self.config.at["ROOF_GRAY_PROB"]
+        white_cutoff = gray_cutoff + self.config.at["ROOF_WHITE_PROB"]
+        if abs(white_cutoff - 1.) > 0.01:
+            print("Error: roof material probabilities don't add to 1. Check the config file.")
+        self.roof_material_probs = (("roof_black", black_cutoff), ("roof_gray", gray_cutoff), ("roof_white", white_cutoff))
+
     def choose_random(self, name_cutoff_pairs):
         r = self.rng.random()
         for name,cutoff in name_cutoff_pairs:
@@ -84,6 +92,8 @@ class PropertyFilter:
             return random_material
     def random_vinyl_color(self):
         return self.choose_random(self.vinyl_color_probs)
+    def random_roof_material(self):
+        return self.choose_random(self.roof_material_probs)
 
     def random_downtown_height(self):
         r = self.rng.random()
@@ -183,7 +193,7 @@ class PropertyFilter:
                 guessed_height = self.random_house_height()
             filtered["height"] = guessed_height
 
-        # Choose a mesh:color.
+        # Choose a mesh_color.
         osm_acceptable_materials = ("glass", "brick", "concrete", "marble", "plaster", "metal")
         if "building:material" in filtered and filtered["building:material"] in osm_acceptable_materials:
             mesh_color = filtered["building:material"]
@@ -203,4 +213,6 @@ class PropertyFilter:
             mesh_color = self.random_apartments_material() 
         filtered["mesh_color"] = mesh_color
 
+        # Choose a roof_color
+        filtered["roof_color"] = self.random_roof_material()
         return filtered

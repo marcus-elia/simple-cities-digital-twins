@@ -100,6 +100,10 @@ def main():
             center_x, center_y = pwp_utm.polygon.centroid.x, pwp_utm.polygon.centroid.y
             containing_tile = TileID(center_x, center_y, tile_min.zone)
 
+            if not (containing_tile.i, containing_tile.j) in tile_to_pwps_map:
+                # If the polygon's center is not in the tile area, ignore it
+                continue
+
             # Filter out unused properties and set the required ones
             downtown = tile_to_downtown_multipolygon_map[(containing_tile.i, containing_tile.j)]
             park = tile_to_park_multipolygon_map[(containing_tile.i, containing_tile.j)]
@@ -107,11 +111,7 @@ def main():
             pwp_utm.properties = property_filter.filter(pwp_utm, downtown, park, residential)
 
             # Add it to the tile's list of polygons
-            try:
-                tile_to_pwps_map[(containing_tile.i, containing_tile.j)].append(pwp_utm)
-            except KeyError:
-                # If the polygon's center is not in the tile area, ignore it
-                continue
+            tile_to_pwps_map[(containing_tile.i, containing_tile.j)].append(pwp_utm)
  
             # Log the status
             num_completed += 1

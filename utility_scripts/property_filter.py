@@ -121,7 +121,13 @@ class PropertyFilter:
         for key,value in raw_properties.items():
             if key == "height" and value != None:
                 # OSM annotators could have put m or M after the number
-                filtered[key] = value.strip('m').strip('M').strip()
+                value = value.strip('m').strip('M').strip()
+                try:
+                    _ = float(value)
+                    filtered[key] = value
+                except ValueError:
+                    print("Bad OSM height value %s" % (value))
+                    pass
             elif key == "building" and value != None:
                 filtered[key] = value
             elif key == "building:material" and value != None:

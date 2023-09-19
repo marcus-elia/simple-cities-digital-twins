@@ -57,6 +57,7 @@ def main():
     polygon_category_group.add_argument("--baseball", action='store_true', help='The geojson polygons are baseball fields')
     polygon_category_group.add_argument("--track", action='store_true', help='The geojson polygons are tracks')
     polygon_category_group.add_argument("--pool", action='store_true', help='The geojson polygons are swimming pools')
+    polygon_category_group.add_argument("--forest", action='store_true', help='The geojson polygons are forests (natural=wood in osm)')
 
     args = parser.parse_args()
 
@@ -97,6 +98,8 @@ def main():
         output_filename = TRACK_FILENAME
     elif args.pool:
         output_filename = POOL_FILENAME
+    elif args.forest:
+        output_filename = FOREST_FILENAME
 
     # Set the variables that will be used in every tile
     geojson_crs = { "type": "name", "properties": { "name": "urn:ogc:def:crs:EPSG::322%d" % (tile_min.zone)}}
@@ -184,7 +187,7 @@ def main():
 
         # Collect info for logging
         start_time = time.time()
-        num_polygons = num_polygons_in_geojson_file(geojson_contents)
+        num_polygons = num_features_in_geojson_file(geojson_contents)
         num_completed = 0
 
         # Now iterate over every polygon in the geojson, intersecting only with relevant tiles

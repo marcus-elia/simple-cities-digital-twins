@@ -51,15 +51,26 @@ def geojson_multipolygon_to_shapely(geojson_multipolygon):
 
     return polygons
 
+def geojson_point_to_shapely(geojson_point):
+    return shapely.Point(geojson_point[0], geojson_point[1])
+
+def geojson_multipoint_to_shapely(geojson_multipoint):
+    return [geojson_point_to_shapely(p) for p in geojson_multipoint]
+
 def geojson_feature_to_shapely(geojson_feature):
     if geojson_feature.geometry["type"] == "MultiPolygon":
         return geojson_multipolygon_to_shapely(geojson_feature.geometry.coordinates)
     elif geojson_feature.geometry["type"] == "Polygon":
         return [geojson_polygon_to_shapely(geojson_feature.geometry.coordinates)]
+    elif geojson_feature.geometry["type"] == "Point":
+        return [geojson_point_to_shapely(geojson_feature.geometry.coordinates)]
+    elif geojson_feature.geometry["type"] == "MultiPoint":
+        return geojson_multipoint_to_shapely(geojson_feature.geometry.coordinates)
     else:
+        print("Unknown geojson geometry type %s." % (geojson_feature.geometry["type"]))
         return []
 
-def num_polygons_in_geojson_file(geojson_contents):
+def num_features_in_geojson_file(geojson_contents):
     return len(geojson_contents['features'])
 
 def read_geojson_file_to_shapely_list(directory_path, filename):
@@ -93,6 +104,12 @@ def geojson_feature_to_pwps(geojson_feature):
         return [geojson_polygon_to_pwp(geojson_feature.geometry.coordinates, geojson_feature.properties)]
     else:
         return PolygonWithProperties(shapely.Polygon(), {})
+
+def shapely_point_to_geojson(shapely_point):
+    return geojson.Point([shapely_point.x, shapely_point.y])
+
+def shapely_points_to_geojson(shapely_points):
+    return geojson.MultiPoint([[p.x, p.y] for p in shapely_points])
 
 def shapely_polygon_to_geojson(shapely_poly):
     return geojson.Polygon([list(shapely_poly.exterior.coords)] + [list(hole.coords) for hole in shapely_poly.interiors])

@@ -126,6 +126,17 @@ def main():
             except FileNotFoundError:
                 pass
 
+            # Load the trees geojson file
+            tree_points = []
+            try:
+                f = open(os.path.join(full_path, "trees.geojson"))
+                tree_geojson_contents = geojson.loads(f.read())
+                f.close()
+                for geojson_feature in tree_geojson_contents['features']:
+                    tree_points += geojson_feature_to_shapely(geojson_feature)
+            except FileNotFoundError:
+                pass
+
             # Create the MTL file (the easy part)
             mtl_path = os.path.join(full_path, TILE_MTL_FILENAME)
             material_name = "%d_%d_%d" % (i, j, tile_min.zone)
@@ -274,7 +285,9 @@ def main():
             # Now add trees
             # TODO why subtract 1?
             starting_vertex_index -= 1
-            for tree_x, tree_y in [(0, 0)]:
+            for shapely_tree_point in tree_points:
+                tree_x = shapely_tree_point.x - sw_x
+                tree_y = shapely_tree_point.y - sw_y
                 elevation = dem.interpolate(sw_x + tree_x, sw_y + tree_y)
                 for line in tree_obj_lines:
                     if line.startswith('m') or line.startswith('#'):
@@ -285,7 +298,7 @@ def main():
                         coords = line.split()[1:]
                         x = float(coords[0]) + tree_x
                         y = float(coords[1]) + elevation
-                        z = float(coords[2]) + tree_y
+                        z = float(coords[2]) + (TileID.TILE_SIZE - tree_y)
                         f.write("v    %.6f    %.6f    %.6f\n" % (x, y, z))
                     elif line.startswith('f'):
                         indices = line.split()[1:]

@@ -8,6 +8,10 @@ class PolygonWithProperties:
         self.polygon = polygon
         self.properties = properties
 
+def point_lonlat_to_utm(point_lonlat, offset=(0,0)):
+    x, y, zone, letter = utm.from_latlon(point_lonlat.y, point_lonlat.x)
+    return shapely.Point(x + offset[0], y + offset[1])
+
 def poly_lonlat_to_utm(poly_lonlat, offset=(0,0)):
     """
     Convert a shapely polygon from lat/lon to UTM. This does both

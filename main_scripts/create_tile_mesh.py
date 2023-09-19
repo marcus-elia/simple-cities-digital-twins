@@ -95,6 +95,17 @@ def main():
     # Load the DEM
     dem = GeoTiffInterpolater(args.dem_path)
 
+    # Load the tree mesh
+    f = open("models/tree.obj", 'r')
+    tree_obj_lines = f.readlines()
+    f.close()
+    f = open("models/tree.mtl", 'r')
+    tree_mtl_lines = f.readlines()
+    f.close()
+
+    # Count the number of vertices in the tree file
+    num_tree_points = sum([1 for line in tree_obj_lines if line.startswith('v')])
+
     # Iterate over every tile, creating an OBJ manually.
     start_time = time.time()
     num_complete = 0
@@ -124,6 +135,7 @@ def main():
             f.write("Kd 1.0000 1.0000 1.0000\n")
             f.write("illum 1\n")
             f.write("map_Kd %s\n\n" % TILE_TEXTURE_FILENAME)
+
             # Add colors for buildings
             # Get them from the config file
             material_color_map = {building_mat_name : config.at[BUILDING_MATERIAL_NAMES[building_mat_name]] for building_mat_name in BUILDING_MATERIAL_NAMES}
@@ -132,6 +144,10 @@ def main():
                 r,g,b = material_color_map[building_mat_name].split(',')
                 f.write("Kd %s %s %s\n" % (r, g, b))
                 f.write("illum 0\n\n")
+
+            # Add colors from the tree model
+            for line in tree_mtl_lines:
+                f.write(line)
             f.close()
 
             # Start the OBJ file
@@ -254,6 +270,31 @@ def main():
 
                 # Update the vertex index based on how many this building added
                 starting_vertex_index += (2 * len(vertices) + 1)
+
+            # Now add trees
+            # TODO why subtract 1?
+            starting_vertex_index -= 1
+            for tree_x, tree_y in [(0, 0)]:
+                elevation = dem.interpolate(sw_x + tree_x, sw_y + tree_y)
+                for line in tree_obj_lines:
+                    if line.startswith('m') or line.startswith('#'):
+                        continue
+                    elif line.startswith('g') or line.startswith('u'):
+                        f.write(line)
+                    elif line.startswith('v'):
+                        coords = line.split()[1:]
+                        x = float(coords[0]) + tree_x
+                        y = float(coords[1]) + elevation
+                        z = float(coords[2]) + tree_y
+                        f.write("v    %.6f    %.6f    %.6f\n" % (x, y, z))
+                    elif line.startswith('f'):
+                        indices = line.split()[1:]
+                        a = int(indices[0]) + starting_vertex_index
+                        b = int(indices[1]) + starting_vertex_index
+                        c = int(indices[2]) + starting_vertex_index
+                        f.write("f %d %d %d\n" % (a, b, c))
+                starting_vertex_index += num_tree_points
+
             f.close()
 
             # Log the status

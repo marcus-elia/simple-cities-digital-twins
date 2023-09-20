@@ -87,7 +87,7 @@ def main():
 
     # Collect info for logging
     start_time = time.time()
-    num_polygons = num_polygons_in_geojson_file(geojson_contents)
+    num_polygons = num_features_in_geojson_file(geojson_contents)
     num_completed = 0
 
     # Now iterate over every polygon in the geojson, putting the building into the tile it belongs in

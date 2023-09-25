@@ -58,6 +58,7 @@ def main():
     polygon_category_group.add_argument("--track", action='store_true', help='The geojson polygons are tracks')
     polygon_category_group.add_argument("--pool", action='store_true', help='The geojson polygons are swimming pools')
     polygon_category_group.add_argument("--forest", action='store_true', help='The geojson polygons are forests (natural=wood in osm)')
+    polygon_category_group.add_argument("--runway", action='store_true', help='The geojson polygons are airport runways')
 
     args = parser.parse_args()
 
@@ -100,6 +101,8 @@ def main():
         output_filename = POOL_FILENAME
     elif args.forest:
         output_filename = FOREST_FILENAME
+    elif args.runway:
+        output_filename = RUNWAY_FILENAME
 
     # Set the variables that will be used in every tile
     geojson_crs = { "type": "name", "properties": { "name": "urn:ogc:def:crs:EPSG::322%d" % (tile_min.zone)}}

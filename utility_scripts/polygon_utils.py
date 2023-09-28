@@ -61,8 +61,11 @@ def poly_lonlat_to_utm(poly_lonlat, offset=(0,0)):
 
 def polygon_list_contains(polygon_list, point):
     for polygon in polygon_list:
-        if polygon.contains(point):
-            return True
+        try:
+            if polygon.contains(point):
+                return True
+        except shapely.errors.GEOSException:
+            pass
     return False
 
 def main():

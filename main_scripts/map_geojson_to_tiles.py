@@ -229,11 +229,24 @@ def main():
         for i in range(min_i, max_i + 1):
             for j in range(min_j, max_j + 1):
                 tile_union = tile_to_polygon_map[(i, j)]
+                # If the tile union is somehow a "geometry collection", make it not that
+                if type(tile_union) == shapely.geometry.collection.GeometryCollection:
+                    polygon_union = shapely.Polygon()
+                    for geom in tile_union.geoms:
+                        if type(geom) == shapely.geometry.polygon.Polygon:
+                            polygon_union = polygon_union.union(geom)
+                        else:
+                            pass
+                    # Now it should be either a Polygon or MultiPolygon
+                    tile_union = polygon_union
+
                 # Convert the multipolygon from shapely to geojson
                 if type(tile_union) == shapely.geometry.multipolygon.MultiPolygon:
                     geojson_tile_union = shapely_multipolygon_to_geojson(tile_union)
                 elif type(tile_union) == shapely.geometry.polygon.Polygon:
                     geojson_tile_union = shapely_polygon_to_geojson(tile_union)
+                else:
+                    print("Unknown shapely type %s" % (type(tile_union)))
                 features = [geojson.Feature(geometry=geojson_tile_union)]
 
                 # Create the tile's directory, in case it doesn't exist yet

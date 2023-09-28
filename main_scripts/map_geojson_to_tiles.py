@@ -213,11 +213,10 @@ def main():
                         current_tile = TileID.tile_indices_to_object(i, j, tile_min.zone)
                         try:
                             clipped_poly = current_tile.polygon().intersection(shapely_polygon_utm)
+                            tile_to_polygon_map[(i, j)] = tile_to_polygon_map[(i, j)].union(clipped_poly)
                         except shapely.errors.GEOSException:
                             print("Error intersecting polygon with tile. Skipping")
-                            continue
-
-                        tile_to_polygon_map[(i, j)] = tile_to_polygon_map[(i, j)].union(clipped_poly)
+                            pass
 
                 # Log the status
                 num_completed += 1

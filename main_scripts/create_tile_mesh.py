@@ -327,6 +327,41 @@ def main():
                         f.write("f %d %d %d\n" % (a, b, c))
                 starting_vertex_index += num_tree_points
 
+            # For the last step, add in any custom buildings
+            f.write("g custom buildings\n")
+            f.write("usemtl %s\n" % ("brick"))
+            for filename in custom_building_filenames_to_centers:
+                center_x, center_y = custom_building_filenames_to_centers[filename]
+                elevation = dem.interpolate(center_x, center_y)
+                local_center_x = center_x - sw_x
+                local_center_y = center_y - sw_y
+                custom_building_full_path = os.path.join(full_path, filename)
+                try:
+                    building_file = open(custom_building_full_path)
+                    lines = building_file.readlines()
+                    building_file.close()
+                except FileNotFoundError:
+                    print("Failed to find %s" % (custom_building_full_path))
+                    continue
+
+                # Add lines to the tile's OBJ based on the lines in the custom building's OBJ
+                num_building_points = 0
+                for line in lines:
+                    if line.startswith('v'):
+                        coords = line.split()[1:]
+                        x = float(coords[0]) + local_center_x
+                        y = float(coords[1]) + elevation
+                        z = float(coords[2]) + (TileID.TILE_SIZE - local_center_y)
+                        f.write("v    %.6f    %.6f    %.6f\n" % (x, y, z))
+                        num_building_points += 1
+                    elif line.startswith('f'):
+                        indices = line.split()[1:]
+                        a = int(indices[0]) + starting_vertex_index
+                        b = int(indices[1]) + starting_vertex_index
+                        c = int(indices[2]) + starting_vertex_index
+                        f.write("f %d %d %d\n" % (a, c, b)) # TODO: why reverse orientation?
+                starting_vertex_index += num_building_points
+
             f.close()
 
             # Log the status

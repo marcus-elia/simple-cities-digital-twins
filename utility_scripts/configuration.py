@@ -23,6 +23,7 @@ TILE_MTL_FILENAME = "tile.mtl"
 TILE_OBJ_FILENAME = "tile.obj"
 TILE_TEXTURE_FILENAME = "tile_texture.jpg"
 BUILDINGS_FILENAME = "buildings.geojson"
+CUSTOM_BUILDINGS_FILENAME = "custom_buildings.txt"
 
 # This maps the name of the material we write in the MTL files to
 # the material's name in the config file

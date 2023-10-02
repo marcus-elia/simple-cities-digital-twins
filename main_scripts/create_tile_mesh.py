@@ -126,6 +126,20 @@ def main():
             except FileNotFoundError:
                 pass
 
+            # Load the info about custom buildings
+            osm_ids_to_ignore = []
+            custom_building_filenames_to_centers = {}
+            custom_buildings_full_path = os.path.join(full_path, CUSTOM_BUILDINGS_FILENAME)
+            f = open(custom_buildings_full_path)
+            for line in f.readlines():
+                if line.startswith("filename"):
+                    name, x, y = line.split()[1:]
+                    custom_building_filenames_to_centers[name] = (float(x), float(y.strip()))
+                elif line.startswith("id"):
+                    osm_ids_to_ignore.append(int(line.split()[1].strip()))
+                else:
+                    print("Unknown line prefix %s in %s" % (line, custom_buildings_full_path))
+
             # Load the trees geojson file
             tree_points = []
             try:
@@ -203,6 +217,11 @@ def main():
             # This variable tracks which index the building's vertices starts with
             starting_vertex_index = (TERRAIN_MESH_ROW_SIZE + 1) * (TERRAIN_MESH_ROW_SIZE + 1) + 1
             for pwp in building_pwps:
+                # Check if the building should be omitted
+                osm_id = int(get_property_or_default(pwp.properties, "osm_id", 0))
+                if osm_id in osm_ids_to_ignore:
+                    continue
+
                 # Determine the elevation/height properties
                 building = pwp.polygon
                 lowest_elevation, highest_elevation = query_building_elevations(building.convex_hull, dem)

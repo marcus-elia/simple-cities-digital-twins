@@ -140,6 +140,8 @@ class PropertyFilter:
                 filtered["roof:color"] = value
             elif key == "roof:material" and value != None:
                 filtered[key] = value
+            elif key == "osm_id" and value != None:
+                filtered[key] = value
 
         # Classify the building type. We will use this for estimating the height.
         # Set building=yes if no building tag is present

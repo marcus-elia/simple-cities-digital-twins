@@ -130,15 +130,18 @@ def main():
             osm_ids_to_ignore = []
             custom_building_filenames_to_centers = {}
             custom_buildings_full_path = os.path.join(full_path, CUSTOM_BUILDINGS_FILENAME)
-            f = open(custom_buildings_full_path)
-            for line in f.readlines():
-                if line.startswith("filename"):
-                    name, x, y = line.split()[1:]
-                    custom_building_filenames_to_centers[name] = (float(x), float(y.strip()))
-                elif line.startswith("id"):
-                    osm_ids_to_ignore.append(int(line.split()[1].strip()))
-                else:
-                    print("Unknown line prefix %s in %s" % (line, custom_buildings_full_path))
+            try:
+                f = open(custom_buildings_full_path)
+                for line in f.readlines():
+                    if line.startswith("filename"):
+                        name, x, y = line.split()[1:]
+                        custom_building_filenames_to_centers[name] = (float(x), float(y.strip()))
+                    elif line.startswith("id"):
+                        osm_ids_to_ignore.append(int(line.split()[1].strip()))
+                    else:
+                        print("Unknown line prefix %s in %s" % (line, custom_buildings_full_path))
+            except FileNotFoundError:
+                pass
 
             # Load the trees geojson file
             tree_points = []

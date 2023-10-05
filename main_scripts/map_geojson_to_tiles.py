@@ -198,6 +198,9 @@ def main():
             shapely_polygons = geojson_feature_to_shapely(geojson_feature)
             for shapely_polygon_lonlat in shapely_polygons:
                 shapely_polygon_utm = poly_lonlat_to_utm(shapely_polygon_lonlat, offset=(args.offset_x, args.offset_y))
+                if shapely_polygon_utm.is_empty:
+                    # If the polygon crossed UTM zones, it could be empty
+                    continue
 
                 # With the polygon in UTM, determine which tiles overlap with its bbox.
                 # Also, make sure it doesn't go beyond the user-specified tile area.

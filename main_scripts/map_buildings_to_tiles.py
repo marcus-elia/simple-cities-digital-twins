@@ -96,6 +96,10 @@ def main():
         for pwp_lonlat in pwps_lonlat:
             pwp_utm = PolygonWithProperties(poly_lonlat_to_utm(pwp_lonlat.polygon, offset=(args.offset_x, args.offset_y)), pwp_lonlat.properties)
 
+            if pwp_utm.polygon.is_empty:
+                # Polygon could be empty if it crossed a UTM boundary
+                continue
+
             # Figure out which tile its center is in
             center_x, center_y = pwp_utm.polygon.centroid.x, pwp_utm.polygon.centroid.y
             containing_tile = TileID(center_x, center_y, tile_min.zone)

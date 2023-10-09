@@ -50,6 +50,7 @@ KEY_TO_TYPE = {\
         "BUILDING_MESH_COLOR" : str,\
         "SINGLE_COLOR_ROOFS" : bool,\
         "ROOF_MESH_COLOR" : str,\
+        "AUTUMN" : bool,\
         # SVG colors
         "GRASS_COLOR" : str,\
         "WATER_COLOR" : str,\

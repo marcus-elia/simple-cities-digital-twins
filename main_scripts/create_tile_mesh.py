@@ -176,6 +176,16 @@ def main():
             # Add colors from the tree model
             for line in tree_mtl_lines:
                 f.write(line)
+            if config.at["AUTUMN"]:
+                f.write("newmtl tree_red\n")
+                f.write("Kd 1.0000 0.0000 0.0000\n")
+                f.write("illum 0\n")
+                f.write("newmtl tree_yellow\n")
+                f.write("Kd 1.0000 1.0000 0.0000\n")
+                f.write("illum 0\n")
+                f.write("newmtl tree_orange\n")
+                f.write("Kd 1.0000 0.5000 0.0000\n")
+                f.write("illum 0\n")
             f.close()
 
             # Start the OBJ file
@@ -307,6 +317,8 @@ def main():
             # Now add trees
             # TODO why subtract 1?
             starting_vertex_index -= 1
+            # rng used for picking autumn colors
+            rng = np.random.default_rng()
             for shapely_tree_point in tree_points:
                 tree_x = shapely_tree_point.x - sw_x
                 tree_y = shapely_tree_point.y - sw_y
@@ -314,8 +326,21 @@ def main():
                 for line in tree_obj_lines:
                     if line.startswith('m') or line.startswith('#'):
                         continue
-                    elif line.startswith('g') or line.startswith('u'):
+                    elif line.startswith('g'):
                         f.write(line)
+                    elif line.startswith('u'):
+                        if not config.at["AUTUMN"] or ("brown" in line):
+                            f.write(line)
+                        else:
+                            rand = rng.random()
+                            if rand < 0.33:
+                                f.write("usemtl tree_red\n")
+                            elif rand < 0.67:
+                                f.write("usemtl tree_yellow\n")
+                            elif rand < 0.98:
+                                f.write("usemtl tree_orange\n")
+                            else:
+                                f.write(line)
                     elif line.startswith('v'):
                         coords = line.split()[1:]
                         x = float(coords[0]) + tree_x

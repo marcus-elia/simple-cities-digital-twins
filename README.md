@@ -9,10 +9,16 @@ Output:
 * An OBJ/MTL file gets created for each tile.
 * Then you can combine the OBJs for different tiles together.
 
-Here is the current state of Ithaca, NY:
+Here are some screenshots:
 
-<img src="https://github.com/marcus-elia/simple-cities-digital-twins/assets/54640981/776f6cdf-c8f4-44f8-a729-e915e49e8b72" width="300" height="300" />
-<img src="https://github.com/marcus-elia/simple-cities-digital-twins/assets/54640981/1924b65e-cf30-48ba-bb6f-92c1ec21df39" width="300" height="300" />
-<img src="https://github.com/marcus-elia/simple-cities-digital-twins/assets/54640981/2e713a8a-6c8b-4a1b-a483-2c3e8f3ce6fc" width="300" height="300" />
+Ithaca, NY
 
+<img src="https://github.com/marcus-elia/simple-cities-digital-twins/assets/54640981/ba6e009b-149c-47e8-949a-b874f9d06de5" width="500" height="300" />
 
+Paris, France
+
+<img src="https://github.com/marcus-elia/simple-cities-digital-twins/assets/54640981/a1cd5602-9ff0-4bb9-a32b-d4b2494a555c" width="500" height="300" />
+
+Washington, DC
+
+<img src="https://github.com/marcus-elia/simple-cities-digital-twins/assets/54640981/8c669ebc-f7b0-412b-b8c4-c4a4727cf4ed" width="300" height="300" />

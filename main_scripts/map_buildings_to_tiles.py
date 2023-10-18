@@ -93,6 +93,8 @@ def main():
     # Now iterate over every polygon in the geojson, putting the building into the tile it belongs in
     for geojson_feature in geojson_contents['features']:
         pwps_lonlat = geojson_feature_to_pwps(geojson_feature)
+        if type(pwps_lonlat) != list:
+            pwps_lonlat = [pwps_lonlat]
         for pwp_lonlat in pwps_lonlat:
             pwp_utm = PolygonWithProperties(poly_lonlat_to_utm(pwp_lonlat.polygon, offset=(args.offset_x, args.offset_y)), pwp_lonlat.properties)
 

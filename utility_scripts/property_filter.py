@@ -142,6 +142,8 @@ class PropertyFilter:
                 filtered[key] = value
             elif key == "osm_id" and value != None:
                 filtered[key] = value
+            elif key == "building:levels" or key == "levels":
+                filtered["levels"] = value
 
         # Classify the building type. We will use this for estimating the height.
         # Set building=yes if no building tag is present
@@ -184,22 +186,36 @@ class PropertyFilter:
 
         # Do the height first, as that can affect the color.
         if not "height" in filtered:
-            if building_classification == BuildingClassification.House:
-                guessed_height = self.random_house_height()
-            elif building_classification == BuildingClassification.Skyscraper:
-                guessed_height = self.random_downtown_height()
-                print("Error: building classified as skyscraper doesn't have height set?")
-            elif building_classification == BuildingClassification.Apartments:
-                guessed_height = self.random_apartments_height()
-            elif building_classification == BuildingClassification.School:
-                guessed_height = self.random_apartments_height()
-            elif building_classification == BuildingClassification.MidsizedCommercial:
-                guessed_height = self.random_apartments_height()
-            elif building_classification == BuildingClassification.DowntownMiscellaneous:
-                guessed_height = self.random_downtown_height()
-            else:
-                guessed_height = self.random_house_height()
-            filtered["height"] = guessed_height
+            # If we know the levels, compute the height from that
+            height_from_levels = False
+            if "levels" in filtered:
+                try:
+                    levels = int(filtered["levels"])
+                    if levels == 1:
+                        filtered["height"] = 4
+                    else:
+                        filtered["height"] = 3 * levels
+                        height_from_levels = True
+                except ValueError:
+                    pass
+            # If we didn't set the height from the levels, guess it from the classification
+            if not height_from_levels:
+                if building_classification == BuildingClassification.House:
+                    guessed_height = self.random_house_height()
+                elif building_classification == BuildingClassification.Skyscraper:
+                    guessed_height = self.random_downtown_height()
+                    print("Error: building classified as skyscraper doesn't have height set?")
+                elif building_classification == BuildingClassification.Apartments:
+                    guessed_height = self.random_apartments_height()
+                elif building_classification == BuildingClassification.School:
+                    guessed_height = self.random_apartments_height()
+                elif building_classification == BuildingClassification.MidsizedCommercial:
+                    guessed_height = self.random_apartments_height()
+                elif building_classification == BuildingClassification.DowntownMiscellaneous:
+                    guessed_height = self.random_downtown_height()
+                else:
+                    guessed_height = self.random_house_height()
+                filtered["height"] = guessed_height
 
         # Choose a mesh_color.
         osm_acceptable_materials = ("glass", "brick", "concrete", "marble", "plaster", "metal")

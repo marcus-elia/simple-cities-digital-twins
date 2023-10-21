@@ -3,6 +3,15 @@ __pycache__/
 *.py[cod]
 *$py.class
 
+# Stupid tilde things
+*~
+
+# Testing files
+*testing.py
+*.svg
+*.blend
+*.blend1
+
 # C extensions
 *.so
 

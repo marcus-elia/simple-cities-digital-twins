@@ -63,6 +63,7 @@ KEY_TO_TYPE = {\
         "TRACK_COLOR" : str,\
         "POOL_COLOR" : str,\
         "BEACH_COLOR" : str,\
+        "RAILWAY_COLOR" : str,\
         # MTL colors
         "GLASS_COLOR" : str,\
         "BRICK_COLOR" : str,\

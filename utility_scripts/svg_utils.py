@@ -4,7 +4,7 @@ import shapely
 
 from tile_id import *
 
-def create_tile_svg(tile, color_polygons_pairs, output_filepath):
+def create_tile_svg(tile, color_polygons_pairs, color_lines_pairs, output_filepath):
     f = open(output_filepath, 'w')
 
     # Determine the bounds and write the header
@@ -28,6 +28,18 @@ def create_tile_svg(tile, color_polygons_pairs, output_filepath):
                 for x,y in hole.coords:
                     vertices_string += '%f,%f ' % (x - x_min, TileID.TILE_SIZE - (y - y_min))
                 vertices_string += 'z\n'
+            vertices_string += '" />\n'
+            f.write(vertices_string)
+    for color, shapely_lines in color_lines_pairs:
+        for shapely_line in shapely_lines:
+            f.write('\t<path\n')
+            f.write('\t\tstroke="%s"\n' % (color))
+            f.write('\t\tstroke-width="0.75"\n')
+            f.write('\t\tfill="none"\n')
+            vertices_string = '\t\td="M '
+            for x,y in shapely_line.coords:
+                vertices_string += '%f,%f ' % (x - x_min, TileID.TILE_SIZE - (y - y_min))
+            vertices_string += '\n'
             vertices_string += '" />\n'
             f.write(vertices_string)
 

@@ -12,6 +12,30 @@ def point_lonlat_to_utm(point_lonlat, offset=(0,0)):
     x, y, zone, letter = utm.from_latlon(point_lonlat.y, point_lonlat.x)
     return shapely.Point(x + offset[0], y + offset[1])
 
+def line_lonlat_to_utm(line_lonlat, offset=(0,0)):
+    """
+    Convert a shapely line from lat/lon to UTM. If an offset is specified, it is
+    added to every point (in UTM).
+    """
+    # Get the UTM zone of the first point
+    _, _, original_zone, _ = utm.from_latlon(line_lonlat.coords[0][1], line_lonlat.coords[0][0])
+
+    # Iterate over the outer boundary and convert it
+    points_utm = []
+    for lonlat_point in line_lonlat.coords:
+        # Convert
+        x, y, zone, letter = utm.from_latlon(lonlat_point[1], lonlat_point[0])
+
+        # Check for a UTM zone crossing
+        if zone != original_zone:
+            print("Line crosses from UTM zone %d to %d. Omitting." % (original_zone, zone))
+            return shapely.Line()
+
+        # If nothing bad happened, add the point to the new line
+        points_utm.append((x + offset[0], y + offset[1]))
+
+    return shapely.LineString(points_utm)
+
 def poly_lonlat_to_utm(poly_lonlat, offset=(0,0)):
     """
     Convert a shapely polygon from lat/lon to UTM. This does both

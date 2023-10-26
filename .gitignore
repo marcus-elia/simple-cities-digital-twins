@@ -11,6 +11,7 @@ __pycache__/
 *.svg
 *.blend
 *.blend1
+*.fbx
 
 # C extensions
 *.so

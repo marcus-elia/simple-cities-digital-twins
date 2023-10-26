@@ -57,6 +57,12 @@ def geojson_point_to_shapely(geojson_point):
 def geojson_multipoint_to_shapely(geojson_multipoint):
     return [geojson_point_to_shapely(p) for p in geojson_multipoint]
 
+def geojson_line_to_shapely(geojson_line):
+    return shapely.LineString([(point[0], point[1]) for point in geojson_line])
+
+def geojson_multiline_to_shapely(geojson_multiline):
+    return [geojson_line_to_shapely(geojson_line) for geojson_line in geojson_multiline]
+
 def geojson_feature_to_shapely(geojson_feature):
     if geojson_feature.geometry["type"] == "MultiPolygon":
         return geojson_multipolygon_to_shapely(geojson_feature.geometry.coordinates)
@@ -66,6 +72,10 @@ def geojson_feature_to_shapely(geojson_feature):
         return [geojson_point_to_shapely(geojson_feature.geometry.coordinates)]
     elif geojson_feature.geometry["type"] == "MultiPoint":
         return geojson_multipoint_to_shapely(geojson_feature.geometry.coordinates)
+    elif geojson_feature.geometry["type"] == "LineString":
+        return [geojson_line_to_shapely(geojson_feature.geometry.coordinates)]
+    elif geojson_feature.geometry["type"] == "MultiLineString":
+        return geojson_multiline_to_shapely(geojson_feature.geometry.coordinates)
     else:
         print("Unknown geojson geometry type %s." % (geojson_feature.geometry["type"]))
         return []
@@ -110,6 +120,12 @@ def shapely_point_to_geojson(shapely_point):
 
 def shapely_points_to_geojson(shapely_points):
     return geojson.MultiPoint([[p.x, p.y] for p in shapely_points])
+
+def shapely_line_to_geojson(shapely_line):
+    return geojson.LineString([[p[0], p[1]] for p in shapely_line.coords])
+
+def shapely_multiline_to_geojson(shapely_multiline):
+    return geojson.MultiLineString([shapely_line_to_geojson(shapely_line) for shapely_line in shapely_multiline.geoms])
 
 def shapely_polygon_to_geojson(shapely_poly):
     return geojson.Polygon([list(shapely_poly.exterior.coords)] + [list(hole.coords) for hole in shapely_poly.interiors])

@@ -188,7 +188,7 @@ class PropertyFilter:
         if not "height" in filtered:
             # If we know the levels, compute the height from that
             height_from_levels = False
-            if "levels" in filtered:
+            if "levels" in filtered and filtered["levels"]:
                 try:
                     levels = int(filtered["levels"])
                     if levels == 1:

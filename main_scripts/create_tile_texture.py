@@ -89,6 +89,9 @@ def main():
             # Read the contents of the runway geojson file
             shapely_runway_polygons = read_geojson_file_to_shapely_list(full_path, RUNWAY_FILENAME)
 
+            # Read the contents of the farmland geojson file
+            shapely_farmland_polygons = read_geojson_file_to_shapely_list(full_path, FARMLAND_FILENAME)
+
             # Read the contents of the railway geojson file
             shapely_railway_lines = read_geojson_file_to_shapely_list(full_path, RAILWAY_FILENAME)
 
@@ -104,6 +107,7 @@ def main():
                     (config.at["SIDEWALK_COLOR"], shapely_sidewalk_polygons),\
                     (config.at["TRACK_COLOR"], shapely_track_polygons),\
                     (config.at["POOL_COLOR"], shapely_pool_polygons),\
+                    (config.at["FARMLAND_COLOR"], shapely_farmland_polygons),\
                     (config.at["BASEBALL_COLOR"], shapely_baseball_polygons)]
             color_lines_pairs = [(config.at["RAILWAY_COLOR"], shapely_railway_lines)]
             svg_path = os.path.join(full_path, SVG_FILENAME)

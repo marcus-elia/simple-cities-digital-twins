@@ -13,6 +13,7 @@ BASEBALL_FILENAME = "baseball_polygons.geojson"
 TRACK_FILENAME = "track_polygons.geojson"
 POOL_FILENAME = "pool_polygons.geojson"
 FOREST_FILENAME = "forest_polygons.geojson"
+FARMLAND_FILENAME = "farmland_polygons.geojson"
 RUNWAY_FILENAME = "runway_polygons.geojson"
 PARK_FILENAME = "parks_polygons.geojson"
 DOWNTOWN_FILENAME = "downtown_polygons.geojson"
@@ -63,6 +64,7 @@ KEY_TO_TYPE = {\
         "TRACK_COLOR" : str,\
         "POOL_COLOR" : str,\
         "BEACH_COLOR" : str,\
+        "FARMLAND_COLOR" : str,\
         "RAILWAY_COLOR" : str,\
         # MTL colors
         "GLASS_COLOR" : str,\
